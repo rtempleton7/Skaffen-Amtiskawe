@@ -1161,7 +1161,7 @@
             } finally { clearTimeout(t); }
         }
 
-        function diagLiveHandshake(tok, apiVer, timeoutMs = 10000, fullSetup = false) {
+        function diagLiveHandshake(tok, apiVer, timeoutMs = 10000, fullSetup = false, roundTrip = false) {
             return new Promise((resolve, reject) => {
                 const modelId = String(tok.liveModel || 'gemini-2.5-flash-native-audio-preview-09-2025').replace(/^models\//, '');
                 const ws = new WebSocket(`wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.${apiVer}.GenerativeService.BidiGenerateContentConstrained?access_token=${encodeURIComponent(tok.name)}`);
@@ -1176,7 +1176,14 @@
                 ws.onmessage = async ev => {
                     try {
                         const raw = (ev.data instanceof Blob) ? await ev.data.text() : ev.data;
-                        if (JSON.parse(raw).setupComplete !== undefined) done(resolve, modelId);
+                        const msg = JSON.parse(raw);
+                        if (msg.setupComplete !== undefined) {
+                            if (!roundTrip) return done(resolve, modelId);
+                            ws.send(JSON.stringify({ realtimeInput: { text: 'Diagnostic check. Say the single word: online.' } }));
+                        }
+                        const parts = (msg.serverContent && msg.serverContent.modelTurn && msg.serverContent.modelTurn.parts) || [];
+                        if (roundTrip && parts.some(p => p.inlineData && p.inlineData.data)) done(resolve, modelId + ' · spoken reply received');
+                        if (msg.error) done(reject, new Error(String(msg.error.message || JSON.stringify(msg.error)).slice(0, 160)));
                     } catch (e) {}
                 };
                 ws.onerror = () => done(reject, new Error('socket error'));
@@ -1269,6 +1276,11 @@
                     if (!j.ok || !j.token || !j.token.name) throw new Error('Could not mint token: ' + (j.error || 'no token'));
                     const m = await diagLiveHandshake(j.token, 'v1alpha', 12000, true);
                     return `setupComplete with persona · ${m}`;
+                });
+                await step('4c. Voice round trip (Skaffen speaks back)', async () => {
+                    const j = await diagPost('mint_live_token', {});
+                    if (!j.ok || !j.token || !j.token.name) throw new Error('Could not mint token: ' + (j.error || 'no token'));
+                    return await diagLiveHandshake(j.token, 'v1alpha', 20000, true, true);
                 });
                 await step('5. Microphone + speech APIs on this device', async () => {
                     const bits = [];
@@ -2304,7 +2316,7 @@
                         if (rms / (s16.length / 4) > 3600) clearLivePlaybackQueue();
                     }
                     ws.send(JSON.stringify({
-                        realtimeInput: { mediaChunks: [{ mimeType:'audio/pcm;rate=16000', data: bytesToB64(pcmBytes) }] }
+                        realtimeInput: { audio: { mimeType:'audio/pcm;rate=16000', data: bytesToB64(pcmBytes) } }
                     }));
                 }
             };

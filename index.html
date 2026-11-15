@@ -35,7 +35,7 @@
 
             --text-primary: #f2ede4;
             --text-secondary: #9cb0c9;
-            --text-muted: #64748b;
+            --text-muted: #8796ab;
 
             --oxblood: #be123c;
             --oxblood-soft: rgba(190, 18, 60, 0.20);
@@ -226,6 +226,16 @@
         }
         .strata-col.dimmed { opacity: 0.22; }
 
+        /* ---- Phone readability: 12px floor, calmer letter-spacing ---- */
+        @media (max-width: 640px) {
+            [class*="text-[8"], [class*="text-[9"], [class*="text-[10"], [class*="text-[11"], .text-xs { font-size: 12px !important; line-height: 1.45; }
+            .tracking-widest { letter-spacing: 0.08em !important; }
+            .tracking-wider { letter-spacing: 0.04em !important; }
+        }
+        /* Rota stat gauges are tucked behind a toggle on phones/tablets */
+        @media (max-width: 1023px) { body:not(.show-gauges) .hero-gauges { display: none !important; } }
+        .today-row { display:flex; justify-content:space-between; gap:0.75rem; align-items:baseline; }
+
         /* 14-Day Flight Strip Cards */
         .flight-card {
             border-radius: 10px; padding: 8px 7px; min-height: 118px;
@@ -280,14 +290,14 @@
             <!-- Deck Navigation -->
             <nav class="flex items-center gap-1 overflow-x-auto max-w-full py-0.5">
                 <button type="button" onclick="switchDeck('flight')" id="tab-flight" class="deck-tab active">
-                    <span>⌖</span><span>01 // Flight &amp; Rota</span>
+                    <span>⌖</span><span>Rota &amp; Diary</span>
                 </button>
                 <button type="button" onclick="switchDeck('recon')" id="tab-recon" class="deck-tab">
-                    <span>◈</span><span>02 // Recon &amp; Family</span>
+                    <span>◈</span><span>Family &amp; Events</span>
                     <span id="badge-recon-count" class="font-telemetry text-[10px] px-1.5 rounded-full" style="background: rgba(200,162,106,0.2); color: var(--bronze-bright);">8</span>
                 </button>
                 <button type="button" onclick="switchDeck('hearth')" id="tab-hearth" class="deck-tab">
-                    <span>🜂</span><span>03 // Hearth &amp; Peak</span>
+                    <span>🜂</span><span>Weekend</span>
                 </button>
             </nav>
 
@@ -311,10 +321,12 @@
     <!-- HERO HOROLOGICAL COMMAND DECK: 4 RADIAL GAUGES + STUDY 02 DRONE CORE + VOICE HUD -->
     <section class="border-b bronze-hairline relative overflow-hidden" style="background: var(--orb-backdrop);">
         <div class="max-w-[1440px] mx-auto px-3 sm:px-6 py-4 sm:py-5">
+            <!-- TODAY CARD (phones & tablets): the answer first -->
+            <div id="today-card" class="lg:hidden machined-panel p-4 mb-4 space-y-3 border" style="border-color: var(--border-bronze-strong);"></div>
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 items-center">
 
                 <!-- LEFT TELEMETRY GAUGES (01 CT Clinical & 02 Dual Annual Leave) -->
-                <div class="lg:col-span-4 order-2 lg:order-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+                <div class="hero-gauges lg:col-span-4 order-2 lg:order-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
                     <div class="machined-panel p-3.5">
                         <div class="flex items-center justify-between">
                             <span class="font-telemetry text-[10px] uppercase tracking-widest" style="color: var(--bronze-bright);">01 // CT Clinical Deliverable</span>
@@ -366,7 +378,7 @@
 
                 <!-- STUDY 02 DRONE CORE: 3D GIMBALLED BRONZE CAGE + GRAPHITE SPHERE + AUDIO PLASMA -->
                 <div class="lg:col-span-4 order-1 lg:order-2 flex flex-col items-center">
-                    <div class="relative w-[276px] h-[276px] sm:w-[308px] sm:h-[308px] flex items-center justify-center select-none">
+                    <div class="relative w-[208px] h-[208px] sm:w-[308px] sm:h-[308px] flex items-center justify-center select-none">
                         <canvas id="drone-core-canvas" class="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing" title="Drag to tilt 3D bronze cage • Click to scan & jump to Today"></canvas>
                         <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 340 340">
                             <circle cx="170" cy="170" r="162" fill="none" stroke="currentColor" stroke-opacity="0.14" stroke-width="1"/>
@@ -386,16 +398,16 @@
                     <div class="flex flex-wrap items-center justify-center gap-2 mt-2">
                         <button type="button" onclick="toggleVoiceMic()" id="btn-voice-mic" class="btn-instrument btn-bronze-solid px-3.5 py-2">
                             <span id="mic-dot" class="w-2 h-2 rounded-full bg-amber-100"></span>
-                            <span id="mic-btn-label">Voice Link: Push to Speak</span>
+                            <span id="mic-btn-label">Talk to Skaffen</span>
                         </button>
                         <button type="button" onclick="toggleCommsDrawer()" class="btn-instrument px-3.5 py-2">
-                            <span>⌨</span><span>Comms HUD</span>
+                            <span>⌨</span><span>Ask Skaffen</span>
                         </button>
                     </div>
                 </div>
 
                 <!-- RIGHT TELEMETRY GAUGES (03 Study Leave & 04 On-Calls / Protect AM) -->
-                <div class="lg:col-span-4 order-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+                <div class="hero-gauges lg:col-span-4 order-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
                     <div class="machined-panel p-3.5">
                         <div class="flex items-center justify-between">
                             <span class="font-telemetry text-[10px] uppercase tracking-widest" style="color: var(--bronze-bright);">03 // Study Leave (10d/yr)</span>
@@ -448,17 +460,17 @@
             </div>
 
             <!-- Skaffen Deadpan Readout + Active Family Alert Strip -->
-            <div class="mt-3.5 machined-inset px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 border bronze-hairline">
-                <div class="flex items-center gap-2 min-w-0 flex-1">
+            <div class="hidden lg:flex mt-3.5 machined-inset px-3.5 py-2.5 flex-wrap items-center justify-between gap-2 border bronze-hairline">
+                <div class="flex items-start sm:items-center gap-2 min-w-0 flex-1 basis-full sm:basis-auto">
                     <span class="font-telemetry text-[10px] uppercase tracking-widest px-2 py-0.5 rounded flex-shrink-0" style="background: rgba(200,162,106,0.18); color: var(--bronze-bright);">SKAFFEN</span>
-                    <p id="skaffen-readout" class="text-xs italic" style="color: var(--text-primary);">
+                    <p id="skaffen-readout" class="text-xs italic min-w-0 flex-1" style="color: var(--text-primary);">
                         Initialising telemetry…
                     </p>
                 </div>
                 <div class="flex items-center gap-2">
                     <span id="voice-freq-badge" class="font-telemetry text-[10px]" style="color: var(--text-muted);">AUDIO: IDLE</span>
                     <button type="button" onclick="switchDeck('recon')" class="font-telemetry text-[10px] px-2 py-0.5 rounded border bronze-hairline cursor-pointer" style="color: var(--bronze-bright);">
-                        ★ 3 Active Family Prompts →
+                        ★ <span id="fam-prompt-count">0</span> Family Prompts →
                     </button>
                 </div>
             </div>
@@ -468,8 +480,8 @@
                 <div class="px-4 py-2.5 border-b bronze-hairline flex flex-wrap items-center justify-between gap-2" style="background: var(--bg-elevated);">
                     <div class="flex items-center gap-2">
                         <span id="comms-status-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                        <span class="font-editorial text-lg font-bold">Skaffen-Amtiskaw // Live Comms HUD</span>
-                        <span class="font-telemetry text-[10px] px-2 py-0.5 rounded border bronze-hairline" style="color: var(--bronze-bright);">Gemini Live (Charon) + Sheet Sync + UK TTS</span>
+                        <span class="font-editorial text-lg font-bold">Skaffen-Amtiskaw</span>
+                        <span class="hidden sm:inline font-telemetry text-[10px] px-2 py-0.5 rounded border bronze-hairline" style="color: var(--bronze-bright);">Gemini Live (Charon) + Sheet Sync + UK TTS</span>
                     </div>
                     <div class="flex items-center gap-1.5">
                         <button type="button" onclick="toggleTtsVoice()" id="btn-tts-toggle" class="btn-instrument py-1 px-2.5 text-[11px]">🔊 Spoken Reply: ON</button>
@@ -488,8 +500,8 @@
                     <button type="button" onclick="toggleVoiceMic()" id="btn-hud-mic" class="btn-instrument px-3 py-2 flex-shrink-0">
                         <span>🎙</span><span id="hud-mic-label" class="font-telemetry text-[11px]">Listen</span>
                     </button>
-                    <input id="comms-input" type="text" placeholder="Speak or type: 'Hold Hermanos Gutiérrez', 'Draft leave on 14 April', 'Jump to July'..." class="flex-1 min-w-[180px] px-3 py-2 rounded-lg text-xs machined-panel focus:outline-none" style="color: var(--text-primary);">
-                    <button type="submit" id="btn-comms-send" class="btn-instrument btn-bronze-solid px-4 py-2">Transmit</button>
+                    <input id="comms-input" type="text" placeholder="Ask Skaffen, e.g. 'pencil in dinner Friday 7:30pm'" class="flex-1 min-w-[180px] px-3 py-2 rounded-lg text-xs machined-panel focus:outline-none" style="color: var(--text-primary);">
+                    <button type="submit" id="btn-comms-send" class="btn-instrument btn-bronze-solid px-4 py-2">Send</button>
                 </form>
             </div>
         </div>
@@ -509,7 +521,7 @@
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <div>
                         <span class="font-telemetry text-[10px] uppercase tracking-widest" style="color: var(--bronze-bright);">39-Week Strata Horizon • w/c 9 Nov 2026 – 8 Aug 2027</span>
-                        <h2 class="font-editorial text-xl sm:text-2xl font-bold leading-tight">14-Day Tactical Flight Strip</h2>
+                        <h2 class="font-editorial text-xl sm:text-2xl font-bold leading-tight">Next 14 Days</h2>
                     </div>
                     <div class="flex flex-wrap items-center gap-1.5">
                         <button type="button" onclick="stepWindow(-1)" class="btn-instrument px-2.5 py-1.5">◀ Prev Wk</button>
@@ -569,7 +581,7 @@
                     <div class="flex items-center justify-between pb-2.5 border-b bronze-hairline">
                         <div>
                             <span id="fam-anchor-label" class="font-telemetry text-[10px] uppercase tracking-widest" style="color: var(--bronze-bright);">Annual Dates</span>
-                            <h2 class="font-editorial text-2xl font-bold">Staged Family Milestone Radar</h2>
+                            <h2 class="font-editorial text-2xl font-bold">Family Dates</h2>
                         </div>
                         <span class="font-telemetry text-[10px] px-2 py-0.5 rounded border bronze-hairline" style="color: var(--pine-text);">21d &amp; 5d Rules</span>
                     </div>
@@ -584,7 +596,7 @@
                     <div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b bronze-hairline">
                         <div>
                             <span class="font-telemetry text-[10px] uppercase tracking-widest" style="color: var(--bronze-bright);">Verified Primary Box Office • Live 3-Day Clearance Strips</span>
-                            <h2 class="font-editorial text-2xl font-bold">Perforated Recon Slips</h2>
+                            <h2 class="font-editorial text-2xl font-bold">Events &amp; Tables</h2>
                         </div>
                         <span class="font-telemetry text-[10.5px]" style="color: var(--text-muted);">Updates live with Sandbox Leave</span>
                     </div>
@@ -610,7 +622,7 @@
             <div class="machined-panel p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <span class="font-telemetry text-[10px] uppercase tracking-widest" style="color: var(--bronze-bright);">Friday 14:00 Field Dispatch • Kamado Joe &amp; Dark Peak Contours</span>
-                    <h2 class="font-editorial text-2xl sm:text-3xl font-bold">Weekend Hearth &amp; Peak Dispatch</h2>
+                    <h2 class="font-editorial text-2xl sm:text-3xl font-bold">Weekend</h2>
                 </div>
                 <button type="button" onclick="refreshHearthViaGemini()" id="btn-refresh-hearth" class="btn-instrument btn-bronze-solid">
                     <span>✦</span><span id="refresh-hearth-label">Refresh Dispatch (Gemini)</span>
@@ -777,7 +789,7 @@
             <div class="p-4 border-b bronze-hairline flex items-center justify-between" style="background: var(--bg-elevated);">
                 <div>
                     <span class="font-telemetry text-[10px] uppercase tracking-widest" style="color: var(--bronze-bright);">Skaffen_Command_DB // Google Apps Script Bridge</span>
-                    <h3 class="font-editorial text-2xl font-bold">Cloud Link &amp; Deploy</h3>
+                    <h3 class="font-editorial text-2xl font-bold">Settings &amp; Sync</h3>
                 </div>
                 <button type="button" onclick="closeCloudModal()" class="btn-instrument px-2.5 py-1">&times;</button>
             </div>
@@ -2786,7 +2798,7 @@
             heroBtn.className = 'btn-instrument px-3.5 py-2 ' + (on ? 'btn-voice-active' : 'btn-bronze-solid');
             document.getElementById('mic-btn-label').textContent = on
                 ? (audioState.liveActive ? 'Charon Live Active • Tap to End' : 'Listening... Tap to Stop')
-                : 'Voice Link: Push to Speak';
+                : 'Talk to Skaffen';
             document.getElementById('hud-mic-label').textContent = on ? 'End' : 'Listen';
         }
 
@@ -2958,7 +2970,7 @@
                         handleSkaffenActions(Array.isArray(cloudAns.actions) ? cloudAns.actions : [], msg);
                         renderCommsLog();
                         speakDryBritish(cloudAns.reply);
-                        btn.textContent = 'Transmit';
+                        btn.textContent = 'Send';
                         return;
                     }
                     backendErrNote = 'ask_skaffen returned no reply.';
@@ -3017,7 +3029,7 @@ Keep replies concise (2-4 sharp sentences), accurate to exact dates, dryly witty
                 renderCommsLog();
                 speakDryBritish(fallback);
             } finally {
-                btn.textContent = 'Transmit';
+                btn.textContent = 'Send';
             }
         }
 
@@ -3180,6 +3192,53 @@ Keep replies concise (2-4 sharp sentences), accurate to exact dates, dryly witty
             showToast(`Exported 39-week .ICS calendar (${state.plans.length} diary plans included).`);
         }
 
+        function shortClash(p) {
+            if (p.end) { const r = rangeRotaSummary(p.iso, p.end); return /⚠/.test(r) ? r : ''; }
+            const d = dayLookup[p.iso]; if (!d) return '';
+            const f = [];
+            if (d.oncall) f.push(`⚠ ${d.oncall} on-call`);
+            const nx = dayLookup[shiftISO(p.iso, 1)];
+            if (nx && !nx.leave && nx.base.type === 'CTCCU') f.push('⚠ CTCCU next morning');
+            else if (nx && !nx.leave && nx.base.type === 'CARDIAC') f.push('theatre next morning');
+            if (d.protectAM) f.push('post-CC1 morning');
+            return f.join(' • ');
+        }
+        function toggleGauges() {
+            document.body.classList.toggle('show-gauges');
+            const b = document.getElementById('btn-gauges');
+            if (b) b.textContent = document.body.classList.contains('show-gauges') ? 'Hide rota stats ▴' : 'Rota stats ▾';
+        }
+        function renderTodayCard() {
+            const el = document.getElementById('today-card'); if (!el) return;
+            const row = (label, iso) => {
+                const v = dayRotaLabel(iso);
+                return v ? `<div class="today-row"><span class="font-telemetry text-[11px] uppercase" style="color:var(--text-muted);">${label}</span><span class="text-sm font-semibold text-right">${esc(v)}</span></div>` : '';
+            };
+            const up = state.plans.filter(p => (p.end || p.iso) >= TODAY_ISO).slice(0, 4).map(p => {
+                const c = shortClash(p);
+                const when = p.end ? `${prettyISO(p.iso)} – ${prettyISO(p.end)}` : `${prettyISO(p.iso)}${p.time ? ' · ' + p.time : ''}`;
+                return `<li class="py-1.5 border-t bronze-hairline first:border-0 cursor-pointer" onclick="jumpToIso('${p.iso}')">
+                    <div class="text-sm font-semibold">${p.end ? '↔' : '📅'} ${esc(p.title)}</div>
+                    <div class="text-xs" style="color:var(--text-secondary);">${esc(when)}${c ? ` <span style="color:var(--ochre-text);">· ${esc(c)}</span>` : ''}</div></li>`;
+            }).join('');
+            const fam = computeFamilyList().filter(f => f.diffDays <= 21 && !f.sorted).slice(0, 2).map(f =>
+                `<div class="text-xs" style="color:var(--bronze-bright);">★ ${esc(f.name)} — ${f.diffDays === 0 ? 'today' : 'in ' + f.diffDays + 'd (' + esc(prettyISO(f.iso)) + ')'}</div>`).join('');
+            const famCount = document.getElementById('fam-prompt-count');
+            if (famCount) famCount.textContent = computeFamilyList().filter(f => f.diffDays <= 21 && !f.sorted).length;
+            el.innerHTML = `
+                <div class="flex items-baseline justify-between gap-2">
+                    <h2 class="font-editorial text-2xl font-bold leading-none">Today</h2>
+                    <span class="font-telemetry text-xs" style="color:var(--bronze-bright);">${esc(prettyISO(TODAY_ISO))}</span>
+                </div>
+                <div class="space-y-1">${row('Today', TODAY_ISO)}${row('Tomorrow', shiftISO(TODAY_ISO, 1))}</div>
+                ${up ? `<div><div class="font-telemetry text-[11px] uppercase mb-0.5" style="color:var(--text-muted);">Coming up</div><ul>${up}</ul></div>` : ''}
+                ${fam ? `<div class="space-y-0.5">${fam}</div>` : ''}
+                <div class="flex flex-wrap gap-2 pt-1">
+                    <button type="button" class="btn-instrument px-3 py-2" onclick="openDayModal(TODAY_ISO)">＋ Plan</button>
+                    <button type="button" id="btn-gauges" class="btn-instrument px-3 py-2 ml-auto" onclick="toggleGauges()">${document.body.classList.contains('show-gauges') ? 'Hide rota stats ▴' : 'Rota stats ▾'}</button>
+                </div>`;
+        }
+
         function refreshAll() {
             buildSchedule();
             updateTelemetryAndAura();
@@ -3188,6 +3247,7 @@ Keep replies concise (2-4 sharp sentences), accurate to exact dates, dryly witty
             renderFamilyRadar();
             renderReconSlips();
             renderHearthDeck();
+            renderTodayCard();
         }
 
         /* ==========================================================================

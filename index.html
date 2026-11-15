@@ -270,8 +270,8 @@
                         <span class="font-telemetry text-[10px] uppercase tracking-widest px-2 py-0.5 rounded border bronze-hairline" style="color: var(--bronze-bright);">
                             Skaffen-Amtiskaw // v2
                         </span>
-                        <span class="hidden xl:inline font-telemetry text-[10.5px]" style="color: var(--text-muted);">
-                            CHEADLE 53.39°N • SUN 15 NOV 2026
+                        <span id="header-date-line" class="hidden xl:inline font-telemetry text-[10.5px]" style="color: var(--text-muted);">
+                            CHEADLE 53.39°N
                         </span>
                     </div>
                 </div>
@@ -1477,7 +1477,8 @@
 
         /* ==========================================================================
            IN-APP DIARY (plans added by typing, voice or the day inspector)
-           Stored on this device (localStorage) — not yet synced to Skaffen_Command_DB.
+           Master copy lives in the Diary tab of Skaffen_Command_DB (add_plan / remove_plan);
+           localStorage holds an offline cache, merged on every sync (see mergeCloudDiary).
            ========================================================================== */
         const MONTH_RX = '(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)';
         const WEEKDAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
@@ -3155,12 +3156,28 @@ Keep replies concise (2-4 sharp sentences), accurate to exact dates, dryly witty
                 if (d.oncall) lines.push('BEGIN:VEVENT',`UID:skf-oc-${uid++}@mft`,`DTSTART;VALUE=DATE:${s}`,`DTEND;VALUE=DATE:${e}`,`SUMMARY:ON-CALL: CTCCU ${d.oncall}`,'END:VEVENT');
                 if (d.held) lines.push('BEGIN:VEVENT',`UID:skf-hd-${uid++}@mft`,`DTSTART;VALUE=DATE:${s}`,`DTEND;VALUE=DATE:${e}`,`SUMMARY:HELD: ${d.held.title}`,'END:VEVENT');
             }));
+            // Diary plans (incl. multi-day ranges and plans beyond the 39-week window)
+            const icsEsc = t => String(t || '').replace(/\\/g, '\\\\').replace(/([,;])/g, '\\$1').replace(/\n/g, '\\n');
+            state.plans.forEach(p => {
+                const s = p.iso.replace(/-/g, '');
+                const ev = ['BEGIN:VEVENT', `UID:skf-plan-${p.id}@skaffen`];
+                if (p.time && !p.end) {
+                    ev.push(`DTSTART;TZID=Europe/London:${s}T${p.time.replace(':', '')}00`, 'DURATION:PT2H');
+                } else {
+                    ev.push(`DTSTART;VALUE=DATE:${s}`, `DTEND;VALUE=DATE:${shiftISO(p.end || p.iso, 1).replace(/-/g, '')}`);
+                }
+                ev.push(`SUMMARY:${icsEsc(p.title)}`, 'END:VEVENT');
+                lines.push(...ev);
+            });
+            // RFC 5545 requires DTSTAMP on every event (Outlook is strict about it)
+            const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+            for (let i = lines.length - 1; i >= 0; i--) if (lines[i] === 'BEGIN:VEVENT') lines.splice(i + 1, 0, `DTSTAMP:${stamp}`);
             lines.push('END:VCALENDAR');
             const a = document.createElement('a');
             a.href = URL.createObjectURL(new Blob([lines.join('\r\n')], { type:'text/calendar;charset=utf-8' }));
             a.download = 'Skaffen_MFT_Nov2026_Aug2027.ics';
             document.body.appendChild(a); a.click(); document.body.removeChild(a);
-            showToast('Exported 39-week .ICS calendar.');
+            showToast(`Exported 39-week .ICS calendar (${state.plans.length} diary plans included).`);
         }
 
         function refreshAll() {
@@ -3220,6 +3237,8 @@ Keep replies concise (2-4 sharp sentences), accurate to exact dates, dryly witty
             injectPwaManifest();
             loadState();
             state.winStart = todayWeekIdx();
+            const hdr = document.getElementById('header-date-line');
+            if (hdr) hdr.textContent = 'CHEADLE 53.39°N • ' + new Date().toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' }).replace(/,/g, '').toUpperCase();
             applyTheme();
             setCloudStatus(state.cloudUrl ? (state.passcode ? 'syncing' : 'auth_needed') : 'local');
             if ('speechSynthesis' in window) window.speechSynthesis.getVoices();

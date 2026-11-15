@@ -1161,7 +1161,7 @@
             } finally { clearTimeout(t); }
         }
 
-        function diagLiveHandshake(tok, apiVer, timeoutMs = 10000) {
+        function diagLiveHandshake(tok, apiVer, timeoutMs = 10000, fullSetup = false) {
             return new Promise((resolve, reject) => {
                 const modelId = String(tok.liveModel || 'gemini-2.5-flash-native-audio-preview-09-2025').replace(/^models\//, '');
                 const ws = new WebSocket(`wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.${apiVer}.GenerativeService.BidiGenerateContentConstrained?access_token=${encodeURIComponent(tok.name)}`);
@@ -1170,7 +1170,8 @@
                 const timer = setTimeout(() => done(reject, new Error('no setupComplete within ' + Math.round(timeoutMs/1000) + 's')), timeoutMs);
                 ws.onopen = () => ws.send(JSON.stringify({ setup: {
                     model: 'models/' + modelId,
-                    generationConfig: { responseModalities:['AUDIO'], speechConfig:{ voiceConfig:{ prebuiltVoiceConfig:{ voiceName:'Charon' } } } }
+                    generationConfig: { responseModalities:['AUDIO'], speechConfig:{ voiceConfig:{ prebuiltVoiceConfig:{ voiceName:'Charon' } } } },
+                    ...(fullSetup ? { systemInstruction: { parts: [{ text: buildLiveSystemInstruction() }] } } : {})
                 } }));
                 ws.onmessage = async ev => {
                     try {
@@ -1229,6 +1230,12 @@
                     if (!j.reply) throw new Error('OK but empty reply — check Gemini key/model in Code.gs.');
                     return 'Reply: "' + String(j.reply).trim().slice(0, 80) + '"';
                 });
+                await step('2b. Gemini + Google Search (as used by chat & scouts)', async () => {
+                    const j = await diagPost('ask_skaffen', { prompt:'Diagnostic ping with search enabled. Reply with the single word ONLINE.', useSearch:true }, 90000);
+                    if (!j.ok) throw new Error('Backend said: ' + (j.error || 'not ok'));
+                    if (!j.reply) throw new Error('OK but empty reply.');
+                    return 'Reply: "' + String(j.reply).trim().slice(0, 80) + '"';
+                });
                 let tok = null;
                 const tokOk = await step('3. Live token (mint_live_token)', async () => {
                     const j = await diagPost('mint_live_token', {});
@@ -1240,7 +1247,7 @@
                     if (tok.expireTime) bits.push('expires ' + new Date(tok.expireTime).toLocaleTimeString('en-GB'));
                     return bits.join(' · ');
                 });
-                if (!tokOk) { skip('4. Charon voice socket', 'Skipped — no Live token.'); return; }
+                if (!tokOk) { skip('4. Charon voice socket', 'Skipped — no Live token.'); skip('4b. Voice with full Skaffen persona', 'Skipped — no Live token.'); return; }
                 await step('4. Charon voice socket (handshake only, no mic)', async () => {
                     try {
                         const m = await diagLiveHandshake(tok, 'v1alpha');
@@ -1256,6 +1263,24 @@
                             throw new Error(`v1alpha: ${e1.message} | v1beta: ${e2.message}`);
                         }
                     }
+                });
+                await step('4b. Voice with full Skaffen persona (exact app setup)', async () => {
+                    const j = await diagPost('mint_live_token', {});
+                    if (!j.ok || !j.token || !j.token.name) throw new Error('Could not mint token: ' + (j.error || 'no token'));
+                    const m = await diagLiveHandshake(j.token, 'v1alpha', 12000, true);
+                    return `setupComplete with persona · ${m}`;
+                });
+                await step('5. Microphone + speech APIs on this device', async () => {
+                    const bits = [];
+                    bits.push('getUserMedia ' + (navigator.mediaDevices && navigator.mediaDevices.getUserMedia ? 'yes' : 'NO'));
+                    bits.push('AudioWorklet ' + (window.AudioWorkletNode ? 'yes' : 'NO'));
+                    bits.push('SpeechRecognition ' + ((window.SpeechRecognition || window.webkitSpeechRecognition) ? 'yes' : 'NO'));
+                    try {
+                        const st = navigator.permissions ? await navigator.permissions.query({ name:'microphone' }) : null;
+                        bits.push('mic permission ' + (st ? st.state : 'unknown'));
+                        if (st && st.state === 'denied') throw new Error(bits.join(' · ') + ' — allow the microphone for this site in Chrome settings.');
+                    } catch (e) { if (/allow the microphone/.test(e.message)) throw e; bits.push('mic permission unknown'); }
+                    return bits.join(' · ');
                 });
             } finally {
                 btn.disabled = false; btn.textContent = '▶ Run Diagnostics';
@@ -2329,7 +2354,16 @@
                 showToast('Live voice socket closed — reverting to ask_skaffen TTS relay.');
                 stopVoiceMic();
             };
-            ws.onclose = () => { if (audioState.liveActive && audioState.ws === ws) stopVoiceMic(); };
+            ws.onclose = ev => {
+                if (audioState.ws === ws && audioState.liveActive) {
+                    voiceErrNote(`Charon Live socket closed (${apiVer}, code ${ev.code}${ev.reason ? ': ' + ev.reason : ''}).`);
+                    stopVoiceMic();
+                }
+            };
+        }
+
+        function voiceErrNote(msg) {
+            try { console.warn('[Skaffen voice]', msg); state.chat.push({ role:'skaffen', text:'⚠ ' + msg }); renderCommsLog(); } catch (e) {}
         }
 
         async function toggleVoiceMic() {
@@ -2346,6 +2380,7 @@
                 } catch (liveErr) {
                     clearLivePlaybackQueue();
                     audioState.liveActive = false;
+                    voiceErrNote('Charon Live could not start: ' + (liveErr && liveErr.message || liveErr));
                 }
             }
 
@@ -2377,7 +2412,7 @@
                     submitCommsPrompt(txt.trim());
                 }
             };
-            recog.onerror = () => stopVoiceMic();
+            recog.onerror = ev => { if (ev && ev.error && ev.error !== 'no-speech' && ev.error !== 'aborted') voiceErrNote('Speech recognition error: ' + ev.error); stopVoiceMic(); };
             recog.onend = () => { if (audioState.listening && !audioState.liveActive) stopVoiceMic(); };
             audioState.recog = recog;
             try { recog.start(); } catch(e) { stopVoiceMic(); }
@@ -2503,6 +2538,7 @@
             btn.textContent = '...';
 
             // Route via grounded Code.gs ask_skaffen (Sheet state + Google Search) when Cloud Link is authenticated
+            let backendErrNote = '';
             if (state.passcode && state.cloudUrl) {
                 try {
                     const promptText = localDone.length ? `${q} [Client already executed: ${localDone.join('; ')}]` : q;
@@ -2514,7 +2550,8 @@
                         btn.textContent = 'Transmit';
                         return;
                     }
-                } catch (cloudErr) {}
+                    backendErrNote = 'ask_skaffen returned no reply.';
+                } catch (cloudErr) { backendErrNote = 'ask_skaffen failed: ' + (cloudErr && cloudErr.message || cloudErr); }
             }
 
             const famSummary = computeFamilyList().slice(0, 6).map(f => `${f.name} (${f.iso}, in ${f.diffDays}d, ${f.rotaCtx})`).join('; ');
@@ -2562,6 +2599,7 @@ Keep replies concise (2-4 sharp sentences), accurate to exact dates, dryly witty
                 const fallback = localDone.length
                     ? `Executed locally: ${localDone.join('; ')}. Telemetry and clearance strips updated accordingly.`
                     : `External comms relay momentarily quiet, though local telemetry remains sharp: CT deliverable stands at ${document.getElementById('val-ct-net').textContent} days, Iona turns nine Wednesday mid-CTCCU, and Hermanos Gutiérrez (2 Dec) plus Stow (4 Dec) remain zero-friction green lights.`;
+                if (backendErrNote) state.chat.push({ role:'skaffen', text:'⚠ Backend error — ' + backendErrNote });
                 state.chat.push({ role:'skaffen', text:fallback });
                 renderCommsLog();
                 speakDryBritish(fallback);

@@ -2571,7 +2571,7 @@
                 `${d.iso}(${DAY_SHORT[d.dIdx]}):${d.leave ? d.leave.type : d.base.short}${d.oncall ? '+' + d.oncall : ''}${d.protectAM ? '[ProtectAM]' : ''}`
             ).join(', ');
             const nextOc = Object.keys(state.oncalls).sort().filter(k => k >= TODAY_ISO).slice(0, 5).map(k => `${k}:${state.oncalls[k]}`).join(', ');
-            return `You are Skaffen-Amtiskaw, hyper-competent Culture tactical drone serving Dr Richard Templeton (Consultant in Cardiac Critical Care/Anaesthesia/ECMO & Deputy Medical Director for CSS at MFT, Cheadle). Speak with crisp, bone-dry British restraint—concise, sharp, protective of downtime and post-CC1 mornings, zero sycophancy. Today: ${prettyISO(TODAY_ISO)} ${TODAY_ISO}. Upcoming family dates: ${computeFamilyList().slice(0, 4).map(f => `${f.name} ${f.iso} (in ${f.diffDays}d)`).join('; ')}. CT Deliverable: ${document.getElementById('val-ct-net').textContent}/42.0; AL: ${document.getElementById('val-al-main').textContent}; Next On-Calls: ${nextOc}. Active 14-day rota window: ${snap14}.`;
+            return `ACCENT: Always speak English with a British Received Pronunciation accent (measured, BBC-style southern English), never an American accent; use British vocabulary and pronunciation. You are Skaffen-Amtiskaw, hyper-competent Culture tactical drone serving Dr Richard Templeton (Consultant in Cardiac Critical Care/Anaesthesia/ECMO & Deputy Medical Director for CSS at MFT, Cheadle). Speak with crisp, bone-dry British restraint—concise, sharp, protective of downtime and post-CC1 mornings, zero sycophancy. Today: ${prettyISO(TODAY_ISO)} ${TODAY_ISO}. Upcoming family dates: ${computeFamilyList().slice(0, 4).map(f => `${f.name} ${f.iso} (in ${f.diffDays}d)`).join('; ')}. CT Deliverable: ${document.getElementById('val-ct-net').textContent}/42.0; AL: ${document.getElementById('val-al-main').textContent}; Next On-Calls: ${nextOc}. Active 14-day rota window: ${snap14}.`;
         }
 
         function clearLivePlaybackQueue() {
@@ -2807,10 +2807,11 @@
             window.speechSynthesis.cancel();
             const clean = text.replace(/[*_`#]/g, '');
             const utt = new SpeechSynthesisUtterance(clean);
+            utt.lang = 'en-GB'; // ensures a UK voice even if the voice list hasn't loaded yet (common on Android)
             const voices = window.speechSynthesis.getVoices();
-            const pick = voices.find(v => /Google UK English Male|Daniel|Arthur|Ryan/i.test(v.name)) ||
-                         voices.find(v => /en-GB/i.test(v.lang)) || voices[0];
-            if (pick) utt.voice = pick;
+            const gb = voices.filter(v => /en[-_]GB/i.test(v.lang));
+            const pick = gb.find(v => /Google UK English Male|Daniel|Arthur|Ryan|Male/i.test(v.name)) || gb[0];
+            if (pick) utt.voice = pick; // never fall back to a non-UK voice; utt.lang lets the device choose its UK default
             utt.rate = 1.03; utt.pitch = 0.92;
             utt.onstart = () => { coreAnim.simSpeak = true; };
             utt.onend = () => { coreAnim.simSpeak = false; document.getElementById('voice-freq-badge').textContent = 'AUDIO: IDLE'; };

@@ -1,0 +1,26 @@
+{
+  "id": "/Skaffen-Amtiskawe/",
+  "name": "SKAFFEN // Tactical Command Centre",
+  "short_name": "Skaffen",
+  "description": "Skaffen-Amtiskaw Personal Command Centre — MFT Rota, Recon & Live Voice",
+  "start_url": "/Skaffen-Amtiskawe/",
+  "scope": "/Skaffen-Amtiskawe/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#080d17",
+  "theme_color": "#080d17",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

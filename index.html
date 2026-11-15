@@ -793,6 +793,16 @@
                 </div>
 
                 <div class="pt-3 border-t bronze-hairline space-y-2">
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="font-telemetry text-[10px] uppercase tracking-wider" style="color: var(--bronze-bright);">Link Diagnostics</span>
+                        <button type="button" id="btn-run-diag" onclick="runDiagnostics()" class="btn-instrument btn-bronze-solid py-2 px-3.5">▶ Run Diagnostics</button>
+                    </div>
+                    <div id="diag-results" class="font-telemetry text-[10.5px] px-3 py-2 rounded machined-inset space-y-1.5" style="color: var(--text-secondary);">
+                        Checks backend + passcode, Gemini via Code.gs, Live token and the Charon voice socket. No microphone, no sheet writes; passcode and tokens are never shown.
+                    </div>
+                </div>
+
+                <div class="pt-3 border-t bronze-hairline space-y-2">
                     <span class="font-telemetry text-[10px] uppercase tracking-wider block" style="color: var(--bronze-bright);">On-Demand Backend Triggers</span>
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         <button type="button" onclick="syncFromCloud(true)" class="btn-instrument py-2">↻ Sync Sheet Now</button>
@@ -1130,6 +1140,126 @@
             }
             setCloudStatus('linked');
             return json;
+        }
+
+        /* ---------- LINK DIAGNOSTICS (read-only; never displays passcode or tokens) ---------- */
+        async function diagPost(action, payload = {}, timeoutMs = 45000) {
+            const ctl = new AbortController();
+            const t = setTimeout(() => ctl.abort(), timeoutMs);
+            try {
+                const res = await fetch(state.cloudUrl, {
+                    method:'POST', redirect:'follow', signal: ctl.signal,
+                    headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action, passcode: state.passcode, ...payload })
+                });
+                const text = await res.text();
+                let json; try { json = JSON.parse(text); } catch (e) { throw new Error(`HTTP ${res.status}, non-JSON reply (${text.slice(0, 60).replace(/\s+/g,' ')}…)`); }
+                return json;
+            } catch (e) {
+                if (e.name === 'AbortError') throw new Error(`timed out after ${Math.round(timeoutMs/1000)}s`);
+                throw e;
+            } finally { clearTimeout(t); }
+        }
+
+        function diagLiveHandshake(tok, apiVer, timeoutMs = 10000) {
+            return new Promise((resolve, reject) => {
+                const modelId = String(tok.liveModel || 'gemini-2.5-flash-native-audio-preview-09-2025').replace(/^models\//, '');
+                const ws = new WebSocket(`wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.${apiVer}.GenerativeService.BidiGenerateContentConstrained?access_token=${encodeURIComponent(tok.name)}`);
+                let settled = false;
+                const done = (fn, v) => { if (settled) return; settled = true; clearTimeout(timer); try { ws.close(); } catch (e) {} fn(v); };
+                const timer = setTimeout(() => done(reject, new Error('no setupComplete within ' + Math.round(timeoutMs/1000) + 's')), timeoutMs);
+                ws.onopen = () => ws.send(JSON.stringify({ setup: {
+                    model: 'models/' + modelId,
+                    generationConfig: { responseModalities:['AUDIO'], speechConfig:{ voiceConfig:{ prebuiltVoiceConfig:{ voiceName:'Charon' } } } }
+                } }));
+                ws.onmessage = async ev => {
+                    try {
+                        const raw = (ev.data instanceof Blob) ? await ev.data.text() : ev.data;
+                        if (JSON.parse(raw).setupComplete !== undefined) done(resolve, modelId);
+                    } catch (e) {}
+                };
+                ws.onerror = () => done(reject, new Error('socket error'));
+                ws.onclose = ev => done(reject, new Error(`socket closed (code ${ev.code}${ev.reason ? ': ' + ev.reason.slice(0, 80) : ''})`));
+            });
+        }
+
+        async function runDiagnostics() {
+            const box = document.getElementById('diag-results');
+            const btn = document.getElementById('btn-run-diag');
+            const rows = [];
+            const render = () => {
+                box.innerHTML = rows.map(r => {
+                    const icon = r.status === 'pass' ? '✓' : r.status === 'fail' ? '✗' : r.status === 'skip' ? '–' : '…';
+                    const col = r.status === 'pass' ? 'var(--pine-text)' : r.status === 'fail' ? 'var(--oxblood-text)' : r.status === 'skip' ? 'var(--text-muted)' : 'var(--sky)';
+                    return `<div class="flex gap-2"><span style="color:${col};min-width:1em;">${icon}</span><span><span style="color:var(--text-primary);">${esc(r.name)}</span>${r.ms != null ? ` <span style="color:var(--text-muted);">${r.ms} ms</span>` : ''}${r.detail ? `<br><span>${esc(r.detail)}</span>` : ''}</span></div>`;
+                }).join('') + `<div class="pt-1" style="color:var(--text-muted);">Run ${esc(new Date().toLocaleTimeString('en-GB'))} · ${esc(navigator.onLine ? 'online' : 'OFFLINE')}</div>`;
+            };
+            const step = async (name, fn) => {
+                const row = { name, status:'run' }; rows.push(row); render();
+                const t0 = performance.now();
+                try { row.detail = await fn(); row.status = 'pass'; }
+                catch (e) { row.status = 'fail'; row.detail = e.message || String(e); }
+                row.ms = Math.round(performance.now() - t0); render();
+                return row.status === 'pass';
+            };
+            const skip = (name, why) => { rows.push({ name, status:'skip', detail: why }); render(); };
+
+            btn.disabled = true; btn.textContent = 'Running…';
+            try {
+                if (!state.cloudUrl || !state.passcode) {
+                    rows.push({ name:'Cloud Link credentials', status:'fail', detail: !state.cloudUrl ? 'No endpoint set.' : 'No passcode saved on this device — enter it above and Save & Sync.' });
+                    render(); return;
+                }
+                const custom = state.cloudUrl !== DEFAULT_BACKEND_URL;
+                const backendOk = await step('1. Backend + passcode (sync_state)' + (custom ? ' [custom URL]' : ''), async () => {
+                    const j = await diagPost('sync_state');
+                    if (!j.ok) throw new Error('Backend said: ' + (j.error || 'not ok'));
+                    const keys = j.data && typeof j.data === 'object' ? Object.keys(j.data) : [];
+                    return keys.length ? `Data returned: ${keys.join(', ')}` : 'OK, but no data payload returned.';
+                });
+                if (!backendOk) {
+                    skip('2. Gemini via Code.gs (ask_skaffen)', 'Skipped — backend check failed.');
+                    skip('3. Live token (mint_live_token)', 'Skipped — backend check failed.');
+                    skip('4. Charon voice socket', 'Skipped — backend check failed.');
+                    return;
+                }
+                await step('2. Gemini via Code.gs (ask_skaffen)', async () => {
+                    const j = await diagPost('ask_skaffen', { prompt:'Diagnostic ping from Skaffen Link Diagnostics. Reply with the single word ONLINE.', useSearch:false }, 60000);
+                    if (!j.ok) throw new Error('Backend said: ' + (j.error || 'not ok'));
+                    if (!j.reply) throw new Error('OK but empty reply — check Gemini key/model in Code.gs.');
+                    return 'Reply: "' + String(j.reply).trim().slice(0, 80) + '"';
+                });
+                let tok = null;
+                const tokOk = await step('3. Live token (mint_live_token)', async () => {
+                    const j = await diagPost('mint_live_token', {});
+                    if (!j.ok) throw new Error('Backend said: ' + (j.error || 'not ok'));
+                    if (!j.token || !j.token.name) throw new Error('OK but no token.name in response.');
+                    tok = j.token;
+                    const bits = ['Token issued'];
+                    if (tok.liveModel) bits.push('model ' + String(tok.liveModel).replace(/^models\//, ''));
+                    if (tok.expireTime) bits.push('expires ' + new Date(tok.expireTime).toLocaleTimeString('en-GB'));
+                    return bits.join(' · ');
+                });
+                if (!tokOk) { skip('4. Charon voice socket', 'Skipped — no Live token.'); return; }
+                await step('4. Charon voice socket (handshake only, no mic)', async () => {
+                    try {
+                        const m = await diagLiveHandshake(tok, 'v1alpha');
+                        return `setupComplete on v1alpha · ${m}`;
+                    } catch (e1) {
+                        // Ephemeral tokens may be single-use: mint a fresh one for the v1beta retry.
+                        const j = await diagPost('mint_live_token', {});
+                        if (!j.ok || !j.token || !j.token.name) throw new Error(`v1alpha: ${e1.message}; could not mint retry token`);
+                        try {
+                            const m = await diagLiveHandshake(j.token, 'v1beta');
+                            return `v1alpha failed (${e1.message}); v1beta OK · ${m}`;
+                        } catch (e2) {
+                            throw new Error(`v1alpha: ${e1.message} | v1beta: ${e2.message}`);
+                        }
+                    }
+                });
+            } finally {
+                btn.disabled = false; btn.textContent = '▶ Run Diagnostics';
+            }
         }
 
         function applyCloudPayload(data) {

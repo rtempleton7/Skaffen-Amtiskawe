@@ -726,6 +726,14 @@
                     <button type="button" onclick="modalToggle('cc1')" class="btn-instrument">Toggle CC1 (1st)</button>
                     <button type="button" onclick="modalToggle('cc2')" class="btn-instrument">Toggle CC2 (2nd)</button>
                 </div>
+                <div class="pt-3 border-t bronze-hairline space-y-2">
+                    <span class="font-telemetry text-[10px] uppercase tracking-wider block" style="color: var(--bronze-bright);">Diary — Add Plan</span>
+                    <div class="flex gap-2">
+                        <input id="modal-plan-title" type="text" placeholder="e.g. Teppanyaki &amp; theatre" class="flex-1 min-w-0 px-3 py-2 rounded-lg text-xs machined-inset focus:outline-none" style="color: var(--text-primary);" onkeydown="if(event.key==='Enter')modalAddPlan()">
+                        <input id="modal-plan-time" type="time" class="w-[92px] px-2 py-2 rounded-lg text-xs machined-inset focus:outline-none" style="color: var(--text-primary);">
+                        <button type="button" onclick="modalAddPlan()" class="btn-instrument btn-bronze-solid px-3">Add</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1058,7 +1066,7 @@
             cloudUrl: DEFAULT_BACKEND_URL, passcode:'', cloudStatus:'auth_needed',
             cloudRecon:[], cloudFamIds:{}, watchlistCount:0, lastSync:'',
             reconCat:'all', fireKey:'venison', trailKey:'shining', guests:4,
-            aiFire:null, aiTrail:null,
+            aiFire:null, aiTrail:null, plans:[],
             commsOpen:false, ttsOn:true, modalIso:null, resetArmed:false,
             chat:[{ role:'skaffen', text:"Skaffen-Amtiskaw online. Happy 12th Anniversary to you and Rachel. Tomorrow begins five straight CTCCU shifts, with Iona turning nine on Wednesday. Open Cloud Link to authenticate Skaffen_Command_DB and direct Charon Live voice." }]
         };
@@ -1078,6 +1086,7 @@
                     state.cloudUrl = p.cloudUrl || DEFAULT_BACKEND_URL;
                     state.passcode = p.passcode || '';
                     state.cloudRecon = p.cloudRecon || [];
+                    state.plans = Array.isArray(p.plans) ? p.plans : [];
                     state.cloudStatus = state.cloudUrl ? (state.passcode ? 'syncing' : 'auth_needed') : 'local';
                     return;
                 } catch(e) {}
@@ -1089,7 +1098,8 @@
             safeSet(STORAGE_KEY, JSON.stringify({
                 theme:state.theme, oncalls:state.oncalls, leaves:state.leaves,
                 heldIds:state.heldIds, dismissedIds:state.dismissedIds, sortedFam:state.sortedFam,
-                guests:state.guests, cloudUrl:state.cloudUrl, passcode:state.passcode, cloudRecon:state.cloudRecon
+                guests:state.guests, cloudUrl:state.cloudUrl, passcode:state.passcode, cloudRecon:state.cloudRecon,
+                plans:state.plans
             }));
         }
 
@@ -1168,10 +1178,9 @@
                 let settled = false;
                 const done = (fn, v) => { if (settled) return; settled = true; clearTimeout(timer); try { ws.close(); } catch (e) {} fn(v); };
                 const timer = setTimeout(() => done(reject, new Error('no setupComplete within ' + Math.round(timeoutMs/1000) + 's')), timeoutMs);
-                ws.onopen = () => ws.send(JSON.stringify({ setup: {
+                ws.onopen = () => ws.send(JSON.stringify(fullSetup ? buildLiveSetupMessage(modelId, true) : { setup: {
                     model: 'models/' + modelId,
-                    generationConfig: { responseModalities:['AUDIO'], speechConfig:{ voiceConfig:{ prebuiltVoiceConfig:{ voiceName:'Charon' } } } },
-                    ...(fullSetup ? { systemInstruction: { parts: [{ text: buildLiveSystemInstruction() }] } } : {})
+                    generationConfig: { responseModalities:['AUDIO'], speechConfig:{ voiceConfig:{ prebuiltVoiceConfig:{ voiceName:'Charon' } } } }
                 } }));
                 ws.onmessage = async ev => {
                     try {
@@ -1271,7 +1280,7 @@
                         }
                     }
                 });
-                await step('4b. Voice with full Skaffen persona (exact app setup)', async () => {
+                await step('4b. Voice with persona + diary tools (exact app setup)', async () => {
                     const j = await diagPost('mint_live_token', {});
                     if (!j.ok || !j.token || !j.token.name) throw new Error('Could not mint token: ' + (j.error || 'no token'));
                     const m = await diagLiveHandshake(j.token, 'v1alpha', 12000, true);
@@ -1442,6 +1451,220 @@
             }
         }
 
+
+        /* ==========================================================================
+           IN-APP DIARY (plans added by typing, voice or the day inspector)
+           Stored on this device (localStorage) — not yet synced to Skaffen_Command_DB.
+           ========================================================================== */
+        const MONTH_RX = '(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)';
+        const WEEKDAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+        const realTodayISO = () => toISO(new Date());
+
+        function nextOccurrenceISO(mIdx, day) {
+            const t = parseISO(realTodayISO());
+            let dt = new Date(t.getFullYear(), mIdx, day);
+            if (dt < t) dt = new Date(t.getFullYear() + 1, mIdx, day);
+            return (dt.getMonth() === mIdx && dt.getDate() === day) ? toISO(dt) : null;
+        }
+
+        // Returns { iso, match } or null. match = the text span to strip from the title.
+        function parseDiaryDate(text) {
+            const low = text.toLowerCase();
+            let m;
+            if ((m = low.match(new RegExp('\\b(?:on\\s+|for\\s+)?(?:(?:mon|tues?|wed(?:nes)?|thu(?:rs)?|fri|sat(?:ur)?|sun)(?:day)?\\s+)?(?:the\\s+)?(\\d{1,2})(?:st|nd|rd|th)?\\s+(?:of\\s+)?' + MONTH_RX + '\\b(?:\\s+(20\\d\\d))?')))) {
+                const mIdx = MONTHS.findIndex(x => x.toLowerCase() === m[2].slice(0, 3));
+                const iso = m[3] ? toISO(new Date(+m[3], mIdx, +m[1])) : nextOccurrenceISO(mIdx, +m[1]);
+                return iso ? { iso, match: m[0] } : null;
+            }
+            if ((m = low.match(new RegExp('\\b(?:on\\s+|for\\s+)?' + MONTH_RX + '\\s+(\\d{1,2})(?:st|nd|rd|th)?\\b(?:,?\\s+(20\\d\\d))?')))) {
+                const mIdx = MONTHS.findIndex(x => x.toLowerCase() === m[1].slice(0, 3));
+                const iso = m[3] ? toISO(new Date(+m[3], mIdx, +m[2])) : nextOccurrenceISO(mIdx, +m[2]);
+                return iso ? { iso, match: m[0] } : null;
+            }
+            if ((m = low.match(/\b(?:on\s+|for\s+)?(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\b/))) {
+                const d = +m[1], mo = +m[2] - 1;
+                if (mo < 0 || mo > 11 || d < 1 || d > 31) return null;
+                const iso = m[3] ? toISO(new Date(m[3].length === 2 ? 2000 + +m[3] : +m[3], mo, d)) : nextOccurrenceISO(mo, d);
+                return iso ? { iso, match: m[0] } : null;
+            }
+            if ((m = low.match(/\b(?:for\s+|on\s+)?(today|tonight|tomorrow(?:\s+(?:night|evening|morning))?)\b/))) {
+                const iso = m[1].startsWith('tomorrow') ? shiftISO(realTodayISO(), 1) : realTodayISO();
+                return { iso, match: m[0] };
+            }
+            if ((m = low.match(/\b(?:on\s+|for\s+)?(this|next)?\s*(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/))) {
+                const t = parseISO(realTodayISO());
+                const todayIdx = (t.getDay() + 6) % 7, target = WEEKDAYS.indexOf(m[2]);
+                let delta = (target - todayIdx + 7) % 7;
+                if (delta === 0) delta = 7;
+                return { iso: shiftISO(realTodayISO(), delta), match: m[0] };
+            }
+            return null;
+        }
+
+        function parseDiaryTime(text) {
+            const low = text.toLowerCase();
+            let m;
+            if ((m = low.match(/\b(?:at\s+|from\s+)?(\d{1,2})(?:[:.](\d{2}))?\s*(am|pm)\b/))) {
+                let h = +m[1] % 12; if (m[3] === 'pm') h += 12;
+                return { time: String(h).padStart(2, '0') + ':' + (m[2] || '00'), match: m[0] };
+            }
+            if ((m = low.match(/\b(?:at\s+|from\s+)?([01]?\d|2[0-3])[:.]([0-5]\d)\b/))) {
+                return { time: String(+m[1]).padStart(2, '0') + ':' + m[2], match: m[0] };
+            }
+            return null;
+        }
+
+        function cleanDiaryTitle(text, strip) {
+            let t = ' ' + text + ' ';
+            strip.filter(Boolean).forEach(s => { const i = t.toLowerCase().indexOf(s.toLowerCase()); if (i >= 0) t = t.slice(0, i) + ' ' + t.slice(i + s.length); });
+            t = t.replace(/\b(?:skaffen|please|thanks|thank you)\b[,!.]?/gi, ' ')
+                 .replace(/\b(?:can|could|would|will)\s+you\b/gi, ' ')
+                 .replace(/\b(?:to|in|into|on|onto|from|off)\s+(?:my|the|our)\s+(?:diary|calendar|plans?|schedule)\b/gi, ' ')
+                 .replace(/\b(?:add|put|pencil(?:\s+in)?|log|note(?:\s+down)?|schedule|book\s+in|diary|plan(?:ned)?|remind\s+me\s+(?:about|of)|remove|delete|cancel|scrap|drop)\b/gi, ' ')
+                 .replace(/\b(?:we(?:'re|\s+are)\s+(?:going\s+(?:to|for)|having|doing)|i(?:'m|\s+am)\s+(?:going\s+(?:to|for)|having|doing)|there(?:'s|\s+is))\b/gi, ' ')
+                 .replace(/[?!]+/g, ' ').replace(/\s+/g, ' ').trim()
+                 .replace(/^(?:[,:;.\-–]|\b(?:a|an|that|this|for|on|at|in|to|and|the plan)\b)\s*/i, '')
+                 .replace(/\s*(?:[,:;.\-–]|\b(?:on|at|for|in|to|and)\b)$/i, '').trim();
+            return t ? t.charAt(0).toUpperCase() + t.slice(1) : 'Plan';
+        }
+
+        function diaryRotaContext(iso) {
+            const d = dayLookup[iso];
+            if (!d) return 'outside the 39-week rota window';
+            const parts = [d.leave ? `${d.leave.status} ${d.leave.type}` : d.base.label];
+            if (d.oncall) parts.push(`⚠ ${d.oncall} on-call`);
+            if (d.protectAM) parts.push('post-CC1 morning');
+            const nextDay = dayLookup[shiftISO(iso, 1)];
+            if (nextDay && !nextDay.leave && nextDay.base.type === 'CTCCU') parts.push('CTCCU next day');
+            return parts.join(' • ');
+        }
+
+        function prettyISO(iso) {
+            const d = parseISO(iso);
+            return `${DAY_SHORT[(d.getDay() + 6) % 7]} ${d.getDate()} ${MONTHS[d.getMonth()]}${d.getFullYear() !== parseISO(realTodayISO()).getFullYear() ? ' ' + d.getFullYear() : ''}`;
+        }
+
+        function addDiaryPlan(iso, title, time = '', source = 'chat') {
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(iso) || !title) return null;
+            const plan = { id: 'pl-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), iso, time: time || '', title: String(title).trim().slice(0, 120), source, created: new Date().toISOString() };
+            state.plans.push(plan);
+            state.plans.sort((a, b) => (a.iso + a.time).localeCompare(b.iso + b.time));
+            saveState(); refreshAll();
+            return plan;
+        }
+
+        function removeDiaryPlan(id) {
+            const p = state.plans.find(x => x.id === id);
+            state.plans = state.plans.filter(x => x.id !== id);
+            saveState(); refreshAll();
+            if (state.modalIso) openDayModal(state.modalIso);
+            return p;
+        }
+
+        function removeDiaryPlansMatching(iso, text) {
+            const onDay = state.plans.filter(p => p.iso === iso);
+            if (!onDay.length) return [];
+            const words = String(text || '').toLowerCase().split(/\W+/).filter(w => w.length > 3);
+            let hits = onDay.filter(p => words.some(w => p.title.toLowerCase().includes(w)));
+            if (!hits.length && onDay.length === 1) hits = onDay;
+            hits.forEach(p => { state.plans = state.plans.filter(x => x.id !== p.id); });
+            if (hits.length) { saveState(); refreshAll(); }
+            return hits;
+        }
+
+        function describePlan(p) {
+            return `${p.title} on ${prettyISO(p.iso)}${p.time ? ' at ' + p.time : ''} (rota: ${diaryRotaContext(p.iso)})`;
+        }
+
+        function upcomingPlansSummary(limit = 15) {
+            const today = realTodayISO();
+            const up = state.plans.filter(p => p.iso >= today).slice(0, limit);
+            return up.length ? up.map(p => `${p.iso}${p.time ? ' ' + p.time : ''}: ${p.title}`).join('; ') : 'none';
+        }
+
+        // Typed/spoken command parser for diary actions. Returns executed descriptions.
+        function parseDiaryCommand(text) {
+            const low = text.toLowerCase();
+            if (/\b(?:annual|study)?\s*leave\b/.test(low)) return [];
+            const dt = parseDiaryDate(text);
+            if (!dt) return [];
+            const isRemove = /\b(?:remove|delete|cancel|scrap|drop|take\s+off)\b/.test(low);
+            const isAdd = /\b(?:add|put|pencil|log|note|schedule|book\s+in|diary|calendar|remind\s+me|we(?:'re|\s+are)\s+(?:going|having|doing)|i(?:'m|\s+am)\s+(?:going|having|doing))\b/.test(low);
+            if (isRemove) {
+                const gone = removeDiaryPlansMatching(dt.iso, text);
+                return gone.length ? gone.map(p => `Removed "${p.title}" from the diary on ${prettyISO(p.iso)}`) : [`No matching diary plan found on ${prettyISO(dt.iso)}`];
+            }
+            if (!isAdd) return [];
+            const tm = parseDiaryTime(text);
+            const title = cleanDiaryTitle(text, [dt.match, tm && tm.match]);
+            const p = addDiaryPlan(dt.iso, title, tm ? tm.time : '', 'chat');
+            if (!p) return [];
+            if (dayLookup[p.iso]) jumpToIso(p.iso);
+            return [`Added to diary: ${describePlan(p)}`];
+        }
+
+        function modalAddPlan() {
+            const tEl = document.getElementById('modal-plan-title'), hEl = document.getElementById('modal-plan-time');
+            const title = tEl.value.trim();
+            if (!title || !state.modalIso) { showToast('Enter a plan title first.'); return; }
+            const p = addDiaryPlan(state.modalIso, title, hEl.value || '', 'manual');
+            tEl.value = ''; hEl.value = '';
+            openDayModal(state.modalIso);
+            showToast('Added: ' + p.title);
+        }
+
+        // Gemini Live function-calling: lets Charon add/remove diary plans by voice.
+        const LIVE_DIARY_TOOLS = [{ functionDeclarations: [
+            { name: 'add_diary_plan',
+              description: "Add a social or personal plan to Richard's Skaffen diary. Use whenever he asks to add, pencil in, note or diarise something.",
+              parameters: { type: 'OBJECT', properties: {
+                  date: { type: 'STRING', description: 'Date as YYYY-MM-DD. Resolve relative dates against today.' },
+                  title: { type: 'STRING', description: "Short title, e.g. 'Teppanyaki and theatre'." },
+                  time: { type: 'STRING', description: 'Start time as HH:MM 24-hour, or empty string if not given.' }
+              }, required: ['date', 'title'] } },
+            { name: 'remove_diary_plan',
+              description: "Remove a plan from Richard's Skaffen diary.",
+              parameters: { type: 'OBJECT', properties: {
+                  date: { type: 'STRING', description: 'Date as YYYY-MM-DD.' },
+                  title_hint: { type: 'STRING', description: 'Words from the plan title to match.' }
+              }, required: ['date'] } }
+        ] }];
+
+        function runLiveDiaryCall(fc) {
+            const a = fc.args || {};
+            try {
+                if (fc.name === 'add_diary_plan') {
+                    const iso = String(a.date || '').slice(0, 10);
+                    const time = /^\d{1,2}:\d{2}$/.test(String(a.time || '')) ? String(a.time).padStart(5, '0') : '';
+                    const p = addDiaryPlan(iso, a.title, time, 'voice');
+                    if (!p) return { ok: false, error: 'Invalid date or title.' };
+                    state.chat.push({ role:'skaffen', text: '📅 ' + 'Added to diary: ' + describePlan(p) }); renderCommsLog();
+                    return { ok: true, added: describePlan(p) };
+                }
+                if (fc.name === 'remove_diary_plan') {
+                    const gone = removeDiaryPlansMatching(String(a.date || '').slice(0, 10), a.title_hint || '');
+                    if (gone.length) { state.chat.push({ role:'skaffen', text: '📅 Removed: ' + gone.map(p => p.title).join(', ') }); renderCommsLog(); }
+                    return { ok: gone.length > 0, removed: gone.map(p => p.title) };
+                }
+            } catch (e) { return { ok: false, error: e.message }; }
+            return { ok: false, error: 'Unknown function.' };
+        }
+
+        function buildLiveSetupMessage(modelId, withTools) {
+            const setup = {
+                model: 'models/' + modelId,
+                generationConfig: {
+                    responseModalities: ['AUDIO'],
+                    speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Charon' } } }
+                },
+                systemInstruction: { parts: [{ text: buildLiveSystemInstruction() + (withTools
+                    ? ` Today's actual date is ${realTodayISO()}. Diary (upcoming plans): ${upcomingPlansSummary()}. When Richard asks you to add, pencil in or remove a plan, call add_diary_plan or remove_diary_plan, then confirm briefly and flag any rota clash.`
+                    : '') }] }
+            };
+            if (withTools) setup.tools = LIVE_DIARY_TOOLS;
+            return { setup };
+        }
+
         let cachedWeeks = [], dayLookup = {};
         function buildSchedule() {
             cachedWeeks = []; dayLookup = {};
@@ -1468,6 +1691,7 @@
                         bh: BANK_HOLIDAYS[iso] || null,
                         fam: famByMD[(dt.getMonth()+1) + '-' + dt.getDate()] || null,
                         held: heldByIso[iso] || null,
+                        plans: state.plans.filter(pl => pl.iso === iso),
                         protectAM
                     };
                     days.push(dayObj);
@@ -1754,7 +1978,7 @@
                 const inWin = !state.expandAll && (w.wIdx === state.winStart || w.wIdx === state.winStart + 1);
                 const hasPinch = w.days.some(d => d.oncall || d.protectAM);
                 const hasOpt = (w.jpWeek === 7) || w.days.some(d => d.leave);
-                const hasStar = w.days.some(d => d.fam || d.held);
+                const hasStar = w.days.some(d => d.fam || d.held || (d.plans && d.plans.length));
                 let dim = false;
                 if (state.strataFilter === 'pinch' && !hasPinch && w.jpWeek !== 2) dim = true;
                 if (state.strataFilter === 'optimiser' && !hasOpt) dim = true;
@@ -1804,6 +2028,7 @@
                     if (d.iso === TODAY_ISO) tags.push(`<span class="block text-center text-[9px] font-telemetry font-bold px-1 rounded" style="background:var(--bronze-bright);color:#111;">TODAY</span>`);
                     if (d.fam) tags.push(`<span class="block truncate text-center text-[9.5px] font-semibold px-1 py-0.5 rounded" style="background:rgba(200,162,106,0.22);color:var(--bronze-bright);">★ ${esc(d.fam.short)}</span>`);
                     if (d.held) tags.push(`<span class="block truncate text-center text-[9.5px] font-semibold px-1 py-0.5 rounded border bronze-hairline" style="background:rgba(200,162,106,0.16);color:var(--bronze-bright);">🎟 ${esc(d.held.title.split('@')[0])}</span>`);
+                    (d.plans || []).forEach(pl => tags.push(`<span class="block truncate text-center text-[9.5px] font-semibold px-1 py-0.5 rounded" style="background:var(--sky-soft, rgba(2,132,199,0.20));color:var(--sky-text, #7dd3fc);" title="${esc(pl.title)}">📅 ${pl.time ? esc(pl.time) + ' ' : ''}${esc(pl.title)}</span>`));
                     if (d.protectAM) tags.push(`<span class="block text-center text-[9px] font-telemetry font-bold px-1 py-0.5 rounded" style="background:var(--ochre-soft);color:var(--ochre-text);">🛡 Protect AM</span>`);
                     if (d.oncall) tags.push(`<span class="block text-center text-[9.5px] font-telemetry font-bold px-1 py-0.5 rounded" style="background:${d.oncall==='CC1'?'#05080f':'var(--sky)'};color:#fff;border:1px solid rgba(255,255,255,0.2);">${d.oncall} On-Call</span>`);
                     if (d.bh) tags.push(`<span class="block truncate text-center text-[9px] opacity-80">${esc(d.bh)}</span>`);
@@ -2274,7 +2499,7 @@
             }
         }
 
-        async function startGeminiLiveVoice(apiVer = 'v1alpha') {
+        async function startGeminiLiveVoice(apiVer = 'v1alpha', withTools = true) {
             const tokRes = await postCloud('mint_live_token', {});
             const tok = tokRes.token;
             if (!tok || !tok.name) throw new Error('Ephemeral token missing from mint_live_token.');
@@ -2324,18 +2549,10 @@
             worklet.connect(zeroGain);
             zeroGain.connect(audioState.ctx.destination);
 
+            let gotSetupComplete = false;
             ws.onopen = () => {
                 const modelId = String(tok.liveModel || 'gemini-2.5-flash-native-audio-preview-09-2025').replace(/^models\//, '');
-                ws.send(JSON.stringify({
-                    setup: {
-                        model: 'models/' + modelId,
-                        generationConfig: {
-                            responseModalities: ['AUDIO'],
-                            speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Charon' } } }
-                        },
-                        systemInstruction: { parts: [{ text: buildLiveSystemInstruction() }] }
-                    }
-                }));
+                ws.send(JSON.stringify(buildLiveSetupMessage(modelId, withTools)));
                 setTimeout(() => { if (audioState.ws === ws) audioState.setupDone = true; }, 450);
                 showToast('Charon Live two-way voice linked. Speak freely (barge-in active).');
             };
@@ -2344,7 +2561,11 @@
                 try {
                     const raw = (ev.data instanceof Blob) ? await ev.data.text() : ev.data;
                     const msg = JSON.parse(raw);
-                    if (msg.setupComplete !== undefined) audioState.setupDone = true;
+                    if (msg.setupComplete !== undefined) { audioState.setupDone = true; gotSetupComplete = true; }
+                    if (msg.toolCall && Array.isArray(msg.toolCall.functionCalls)) {
+                        const functionResponses = msg.toolCall.functionCalls.map(fc => ({ id: fc.id, name: fc.name, response: runLiveDiaryCall(fc) }));
+                        if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ toolResponse: { functionResponses } }));
+                    }
                     const sc = msg.serverContent;
                     if (sc) {
                         if (sc.interrupted) clearLivePlaybackQueue();
@@ -2360,13 +2581,21 @@
                 if (!audioState.setupDone && apiVer === 'v1alpha') {
                     stopVoiceMic();
                     audioState.listening = true;
-                    startGeminiLiveVoice('v1beta').catch(() => stopVoiceMic());
+                    startGeminiLiveVoice('v1beta', withTools).catch(() => stopVoiceMic());
                     return;
                 }
                 showToast('Live voice socket closed — reverting to ask_skaffen TTS relay.');
                 stopVoiceMic();
             };
             ws.onclose = ev => {
+                if (audioState.ws === ws && audioState.liveActive && withTools && !gotSetupComplete) {
+                    // Setup with diary tools rejected — retry once without them so voice still works.
+                    voiceErrNote(`Voice diary tools not accepted (code ${ev.code}${ev.reason ? ': ' + ev.reason : ''}); continuing voice without diary actions.`);
+                    stopVoiceMic();
+                    audioState.listening = true; updateMicButtons(true);
+                    startGeminiLiveVoice(apiVer, false).catch(err => { voiceErrNote('Charon Live retry failed: ' + err.message); stopVoiceMic(); });
+                    return;
+                }
                 if (audioState.ws === ws && audioState.liveActive) {
                     voiceErrNote(`Charon Live socket closed (${apiVer}, code ${ev.code}${ev.reason ? ': ' + ev.reason : ''}).`);
                     stopVoiceMic();
@@ -2545,7 +2774,7 @@
             state.chat.push({ role:'user', text:q });
             renderCommsLog();
 
-            const localDone = parseLocalActions(q);
+            const localDone = [...parseDiaryCommand(q), ...parseLocalActions(q)];
             const btn = document.getElementById('btn-comms-send');
             btn.textContent = '...';
 
@@ -2553,7 +2782,8 @@
             let backendErrNote = '';
             if (state.passcode && state.cloudUrl) {
                 try {
-                    const promptText = localDone.length ? `${q} [Client already executed: ${localDone.join('; ')}]` : q;
+                    const promptText = (localDone.length ? `${q} [Client already executed: ${localDone.join('; ')}]` : q)
+                        + ` [Skaffen diary, upcoming plans: ${upcomingPlansSummary()}]`;
                     const cloudAns = await postCloud('ask_skaffen', { prompt: promptText, useSearch: true });
                     if (cloudAns && cloudAns.reply) {
                         state.chat.push({ role:'skaffen', text:cloudAns.reply });
@@ -2717,6 +2947,9 @@ Keep replies concise (2-4 sharp sentences), accurate to exact dates, dryly witty
             if (d.fam) rows += `<div class="pt-1 font-semibold" style="color:var(--bronze-bright);">★ Family: ${esc(d.fam.name)}</div>`;
             if (d.held) rows += `<div class="pt-1 font-semibold" style="color:var(--bronze-bright);">🎟 Held Event: ${esc(d.held.title)}</div>`;
             if (d.protectAM) rows += `<div class="p-2 mt-1 rounded font-semibold" style="background:var(--ochre-soft);color:var(--ochre-text);">🛡 Post-CC1 Morning Shield Active</div>`;
+            (d.plans || []).forEach(pl => {
+                rows += `<div class="pt-1 flex items-center justify-between gap-2"><span class="font-semibold" style="color:var(--sky-text, #7dd3fc);">📅 ${pl.time ? esc(pl.time) + ' · ' : ''}${esc(pl.title)}</span><button type="button" class="btn-instrument px-2 py-0.5" title="Remove plan" onclick="removeDiaryPlan('${pl.id}')">&times;</button></div>`;
+            });
             document.getElementById('modal-info-rows').innerHTML = rows;
             document.getElementById('day-modal').className = 'modal-backdrop';
         }

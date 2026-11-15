@@ -1,0 +1,2648 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dusk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="theme-color" content="#080d17">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Skaffen">
+    <title>SKAFFEN v2 // Tactical Personal Command Centre — Dr Richard Templeton</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ==========================================================================
+           HIGHLAND DUSK & FIELD ALMANAC DESIGN TOKENS
+           ========================================================================== */
+        :root, [data-theme="dusk"] {
+            --bg-abyss: #070b12;
+            --bg-surface: #0d1421;
+            --bg-elevated: #131d30;
+            --bg-subtle: #1a2740;
+            --bg-weekend: #090f1a;
+            --bg-glass: rgba(13, 20, 33, 0.90);
+
+            --bronze-bright: #c8a26a;
+            --bronze-mid: #b08d57;
+            --bronze-deep: #866639;
+            --border-bronze: rgba(176, 141, 87, 0.32);
+            --border-bronze-strong: rgba(200, 162, 106, 0.72);
+            --border-subtle: rgba(148, 163, 184, 0.13);
+            --top-bevel: inset 0 1px 0 rgba(200, 162, 106, 0.22);
+
+            --text-primary: #f2ede4;
+            --text-secondary: #9cb0c9;
+            --text-muted: #64748b;
+
+            --oxblood: #be123c;
+            --oxblood-soft: rgba(190, 18, 60, 0.20);
+            --oxblood-text: #fda4af;
+            --oxblood-border: rgba(190, 18, 60, 0.48);
+
+            --ochre: #d97706;
+            --ochre-soft: rgba(217, 119, 6, 0.18);
+            --ochre-text: #fcd34d;
+            --ochre-border: rgba(217, 119, 6, 0.45);
+
+            --teal: #0d9488;
+            --teal-soft: rgba(13, 148, 136, 0.20);
+            --teal-text: #5eead4;
+            --teal-border: rgba(13, 148, 136, 0.45);
+
+            --pine: #059669;
+            --pine-soft: rgba(5, 150, 105, 0.20);
+            --pine-text: #6ee7b7;
+            --pine-border: rgba(5, 150, 105, 0.46);
+
+            --sky: #0284c7;
+            --violet: #7c3aed;
+            --violet-soft: rgba(124, 58, 237, 0.20);
+            --violet-text: #ddd6fe;
+            --mgmt-soft: rgba(51, 65, 85, 0.36);
+
+            --shadow-machined: 0 14px 34px -10px rgba(0, 0, 0, 0.68);
+            --orb-backdrop: radial-gradient(circle at 50% 48%, rgba(176, 141, 87, 0.10) 0%, rgba(7, 11, 18, 0) 70%);
+        }
+
+        [data-theme="almanac"] {
+            --bg-abyss: #f5f0e6;
+            --bg-surface: #fcfaf4;
+            --bg-elevated: #efe8da;
+            --bg-subtle: #e4dbc9;
+            --bg-weekend: #f0eadc;
+            --bg-glass: rgba(252, 250, 244, 0.92);
+
+            --bronze-bright: #6e4e28;
+            --bronze-mid: #8a6538;
+            --bronze-deep: #5c4020;
+            --border-bronze: rgba(138, 101, 56, 0.34);
+            --border-bronze-strong: rgba(110, 78, 40, 0.74);
+            --border-subtle: rgba(42, 34, 24, 0.12);
+            --top-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+
+            --text-primary: #1e1914;
+            --text-secondary: #4e453b;
+            --text-muted: #786e62;
+
+            --oxblood: #be123c;
+            --oxblood-soft: rgba(190, 18, 60, 0.11);
+            --oxblood-text: #881337;
+            --oxblood-border: rgba(190, 18, 60, 0.38);
+
+            --ochre: #d97706;
+            --ochre-soft: rgba(217, 119, 6, 0.13);
+            --ochre-text: #78350f;
+            --ochre-border: rgba(180, 83, 9, 0.38);
+
+            --teal: #0d9488;
+            --teal-soft: rgba(13, 148, 136, 0.13);
+            --teal-text: #115e59;
+            --teal-border: rgba(13, 148, 136, 0.38);
+
+            --pine: #059669;
+            --pine-soft: rgba(5, 150, 105, 0.13);
+            --pine-text: #064e3b;
+            --pine-border: rgba(5, 150, 105, 0.40);
+
+            --sky: #0284c7;
+            --violet: #6d28d9;
+            --violet-soft: rgba(109, 40, 217, 0.12);
+            --violet-text: #4c1d95;
+            --mgmt-soft: rgba(100, 116, 139, 0.14);
+
+            --shadow-machined: 0 10px 24px -8px rgba(45, 34, 20, 0.14);
+            --orb-backdrop: radial-gradient(circle at 50% 48%, rgba(138, 101, 56, 0.12) 0%, rgba(245, 240, 230, 0) 70%);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html, body {
+            background-color: var(--bg-abyss);
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 14px;
+            line-height: 1.45;
+            overflow-x: hidden;
+            transition: background-color 0.22s ease, color 0.22s ease;
+        }
+        .font-editorial { font-family: 'Cormorant Garamond', Georgia, serif; letter-spacing: 0.01em; }
+        .font-telemetry { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+
+        .machined-panel {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-bronze);
+            box-shadow: var(--top-bevel), var(--shadow-machined);
+            border-radius: 14px;
+        }
+        .machined-inset {
+            background-color: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            box-shadow: var(--top-bevel);
+            border-radius: 10px;
+        }
+        .bronze-hairline { border-color: var(--border-bronze); }
+
+        /* Perforated Ticket-Stub Recon Slip */
+        .recon-slip {
+            position: relative;
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-bronze);
+            box-shadow: var(--top-bevel), var(--shadow-machined);
+            border-radius: 12px;
+            transition: border-color 0.16s ease, transform 0.16s ease;
+        }
+        .recon-slip:hover { border-color: var(--border-bronze-strong); }
+        .perforated-divider {
+            position: relative;
+            border-top: 1px dashed var(--border-bronze-strong);
+            margin: 10px 0;
+        }
+        .perforated-divider::before, .perforated-divider::after {
+            content: "";
+            position: absolute;
+            top: -6px;
+            width: 11px;
+            height: 11px;
+            border-radius: 999px;
+            background: var(--bg-abyss);
+            border: 1px solid var(--border-bronze);
+        }
+        .perforated-divider::before { left: -21px; }
+        .perforated-divider::after { right: -21px; }
+
+        .btn-instrument {
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            padding: 7px 12px; border-radius: 9px; font-size: 11.5px; font-weight: 600;
+            border: 1px solid var(--border-bronze); background: var(--bg-elevated);
+            color: var(--text-primary); box-shadow: var(--top-bevel); cursor: pointer;
+            transition: all 0.15s ease; white-space: nowrap; text-decoration: none;
+        }
+        .btn-instrument:hover { border-color: var(--border-bronze-strong); background: var(--bg-subtle); }
+        .btn-bronze-solid {
+            background: linear-gradient(135deg, #c8a26a 0%, #866639 100%);
+            color: #fffdf9; border: 1px solid rgba(255, 244, 224, 0.36);
+        }
+        .btn-voice-active {
+            background: linear-gradient(135deg, #be123c 0%, #881337 100%);
+            color: #fff; border-color: #fda4af; box-shadow: 0 0 18px rgba(190, 18, 60, 0.5);
+        }
+
+        .deck-tab {
+            padding: 7px 13px; border-radius: 9px; font-size: 12px; font-weight: 600;
+            color: var(--text-secondary); border: 1px solid transparent; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+        }
+        .deck-tab:hover { color: var(--text-primary); background: var(--bg-elevated); }
+        .deck-tab.active {
+            color: var(--text-primary); background: var(--bg-elevated);
+            border-color: var(--border-bronze-strong); box-shadow: var(--top-bevel);
+        }
+
+        .chip-btn {
+            padding: 5px 10px; border-radius: 7px; font-size: 11px; font-weight: 600;
+            background: var(--bg-elevated); color: var(--text-secondary);
+            border: 1px solid var(--border-subtle); cursor: pointer;
+            display: inline-flex; align-items: center; gap: 5px; transition: all 0.14s ease;
+        }
+        .chip-btn:hover { color: var(--text-primary); border-color: var(--border-bronze); }
+        .chip-btn.active {
+            background: rgba(176, 141, 87, 0.18); color: var(--text-primary);
+            border-color: var(--border-bronze-strong);
+        }
+
+        /* 39-Week Strata Ribbon */
+        .strata-col {
+            flex: 1 1 0%; min-width: 14px; height: 64px; display: flex; flex-direction: column;
+            justify-content: space-between; padding: 3px 1.5px;
+            border-right: 1px solid var(--border-subtle); cursor: pointer; user-select: none;
+        }
+        .strata-col:last-child { border-right: none; }
+        .strata-col:hover { background-color: rgba(200, 162, 106, 0.12); }
+        .strata-col.in-window {
+            background-color: rgba(200, 162, 106, 0.20);
+            box-shadow: inset 0 2px 0 var(--bronze-bright), inset 0 -2px 0 var(--bronze-bright);
+        }
+        .strata-col.dimmed { opacity: 0.22; }
+
+        /* 14-Day Flight Strip Cards */
+        .flight-card {
+            border-radius: 10px; padding: 8px 7px; min-height: 118px;
+            display: flex; flex-direction: column; justify-content: space-between;
+            border: 1px solid var(--border-subtle); box-shadow: var(--top-bevel);
+            cursor: pointer; user-select: none; transition: transform 0.13s ease, border-color 0.13s ease;
+        }
+        .flight-card:hover { transform: translateY(-1px); border-color: var(--border-bronze-strong); }
+        .flight-card.today-ring {
+            border: 1.5px solid var(--bronze-bright);
+            box-shadow: 0 0 0 1px rgba(200, 162, 106, 0.35), 0 6px 18px rgba(176, 141, 87, 0.20);
+        }
+        .tone-ctccu   { background: var(--oxblood-soft); border-color: var(--oxblood-border); }
+        .tone-cardiac { background: var(--ochre-soft);   border-color: var(--ochre-border); }
+        .tone-flex    { background: var(--teal-soft);    border-color: var(--teal-border); }
+        .tone-mgmt    { background: var(--mgmt-soft); }
+        .tone-off     { background: var(--bg-surface); }
+        .tone-wknd    { background: var(--bg-weekend); }
+        .tone-al      { background: var(--pine-soft);    border-color: var(--pine-border); }
+        .tone-sl      { background: var(--violet-soft);  border-color: rgba(124, 58, 237, 0.42); }
+
+        .modal-backdrop {
+            position: fixed; inset: 0; background: rgba(5, 8, 15, 0.76);
+            backdrop-filter: blur(4px); display: flex; align-items: center;
+            justify-content: center; padding: 14px; z-index: 150;
+        }
+        .modal-backdrop.hidden { display: none !important; }
+    </style>
+</head>
+<body class="min-h-screen pb-16">
+
+    <!-- TOP HOROLOGICAL HEADER -->
+    <header class="border-b bronze-hairline sticky top-0 z-40 backdrop-blur-md" style="background: var(--bg-glass);">
+        <div class="max-w-[1440px] mx-auto px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2.5">
+            <div class="flex items-center gap-2.5">
+                <button type="button" onclick="toggleCommsDrawer()" class="w-9 h-9 rounded-lg machined-inset flex items-center justify-center border bronze-hairline cursor-pointer" title="Open Skaffen Comms">
+                    <span id="header-aura-pip" class="w-2.5 h-2.5 rounded-full" style="background: var(--oxblood); box-shadow: 0 0 10px var(--oxblood);"></span>
+                </button>
+                <div>
+                    <div class="flex items-center flex-wrap gap-2">
+                        <span class="font-editorial text-xl sm:text-2xl font-bold tracking-wide leading-none">SKAFFEN</span>
+                        <span class="font-telemetry text-[10px] uppercase tracking-widest px-2 py-0.5 rounded border bronze-hairline" style="color: var(--bronze-bright);">
+                            Skaffen-Amtiskaw // v2
+                        </span>
+                        <span class="hidden xl:inline font-telemetry text-[10.5px]" style="color: var(--text-muted);">
+                            CHEADLE 53.39°N • SUN 15 NOV 2026
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deck Navigation -->
+            <nav class="flex items-center gap-1 overflow-x-auto max-w-full py-0.5">
+                <button type="button" onclick="switchDeck('flight')" id="tab-flight" class="deck-tab active">
+                    <span>⌖</span><span>01 // Flight &amp; Rota</span>
+                </button>
+                <button type="button" onclick="switchDeck('recon')" id="tab-recon" class="deck-tab">
+                    <span>◈</span><span>02 // Recon &amp; Family</span>
+                    <span id="badge-recon-count" class="font-telemetry text-[10px] px-1.5 rounded-full" style="background: rgba(200,162,106,0.2); color: var(--bronze-bright);">8</span>
+                </button>
+                <button type="button" onclick="switchDeck('hearth')" id="tab-hearth" class="deck-tab">
+                    <span>🜂</span><span>03 // Hearth &amp; Peak</span>
+                </button>
+            </nav>
+
+            <!-- Utility Actions -->
+            <div class="flex items-center gap-1.5">
+                <button type="button" onclick="openCloudModal()" id="btn-cloud-link" class="btn-instrument" title="Cloud Link, Sheet Scouts &amp; Standalone PWA Export">
+                    <span id="cloud-status-dot" class="w-2 h-2 rounded-full" style="background: var(--ochre); box-shadow: 0 0 8px var(--ochre);"></span>
+                    <span id="cloud-status-pill" class="font-telemetry text-[10.5px]">AUTH NEEDED</span>
+                </button>
+                <button type="button" onclick="toggleTheme()" class="btn-instrument" title="Switch Highland Dusk / Field Almanac">
+                    <span id="theme-icon">☀</span>
+                    <span id="theme-label" class="hidden sm:inline">Field Almanac</span>
+                </button>
+                <button type="button" onclick="openLedgerModal()" class="btn-instrument">Ledger</button>
+                <button type="button" onclick="exportICS()" class="btn-instrument" title="Export 39-Week .ICS">.ICS</button>
+                <button type="button" onclick="triggerReset()" id="btn-reset" class="btn-instrument" style="color: var(--oxblood-text);">Reset</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO HOROLOGICAL COMMAND DECK: 4 RADIAL GAUGES + STUDY 02 DRONE CORE + VOICE HUD -->
+    <section class="border-b bronze-hairline relative overflow-hidden" style="background: var(--orb-backdrop);">
+        <div class="max-w-[1440px] mx-auto px-3 sm:px-6 py-4 sm:py-5">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 items-center">
+
+                <!-- LEFT TELEMETRY GAUGES (01 CT Clinical & 02 Dual Annual Leave) -->
+                <div class="lg:col-span-4 order-2 lg:order-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+                    <div class="machined-panel p-3.5">
+                        <div class="flex items-center justify-between">
+                            <span class="font-telemetry text-[10px] uppercase tracking-widest" style="color: var(--bronze-bright);">01 // CT Clinical Deliverable</span>
+                            <span class="font-telemetry text-[10px] px-1.5 py-0.5 rounded font-semibold" style="background: var(--oxblood-soft); color: var(--oxblood-text);">Target 42.0/yr</span>
+                        </div>
+                        <div class="flex items-center justify-between gap-2 mt-2">
+                            <div class="flex items-center gap-3">
+                                <svg class="w-11 h-11 flex-shrink-0 -rotate-90" viewBox="0 0 48 48">
+                                    <circle cx="24" cy="24" r="19" fill="none" stroke="currentColor" stroke-opacity="0.14" stroke-width="3.6"/>
+                                    <circle id="arc-ct" cx="24" cy="24" r="19" fill="none" stroke="#be123c" stroke-width="3.6" stroke-linecap="round" stroke-dasharray="119.38" stroke-dashoffset="22"/>
+                                </svg>
+                                <div class="font-telemetry">
+                                    <span id="val-ct-net" class="text-2xl font-bold">34.0</span>
+                                    <span id="val-ct-sched" class="text-xs" style="color: var(--text-muted);">/ 39.0 sched</span>
+                                    <div class="text-[10.5px]" style="color: var(--text-secondary);">39w pro-rata: 31.5d</div>
+                                </div>
+                            </div>
+                            <div class="text-right font-telemetry text-[10.5px]">
+                                <div id="val-ct-al" class="font-semibold" style="color: var(--pine-text);">5.0 CT d on AL</div>
+                                <div style="color: var(--text-muted);">8.0d buffer rem</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="machined-panel p-3.5 cursor-pointer" onclick="toggleAlView()" title="Click to toggle App Calendar Days vs Job Plan Sessions">
+                        <div class="flex items-center justify-between">
+                            <span class="font-telemetry text-[10px] uppercase tracking-widest" style="color: var(--bronze-bright);">02 // Dual Annual Leave</span>
+                            <span id="pill-al-mode" class="font-telemetry text-[10px] px-2 py-0.5 rounded border bronze-hairline" style="background: var(--pine-soft); color: var(--pine-text);">App Days ⇄ JP</span>
+                        </div>
+                        <div class="flex items-center justify-between gap-2 mt-2">
+                            <div class="flex items-center gap-3">
+                                <svg class="w-11 h-11 flex-shrink-0 -rotate-90" viewBox="0 0 48 48">
+                                    <circle cx="24" cy="24" r="19" fill="none" stroke="currentColor" stroke-opacity="0.14" stroke-width="3.6"/>
+                                    <circle id="arc-al" cx="24" cy="24" r="19" fill="none" stroke="#059669" stroke-width="3.6" stroke-linecap="round" stroke-dasharray="119.38" stroke-dashoffset="10.5"/>
+                                </svg>
+                                <div class="font-telemetry">
+                                    <span id="val-al-main" class="text-2xl font-bold">31</span>
+                                    <span id="val-al-sub" class="text-xs" style="color: var(--text-muted);">/ 34 App d</span>
+                                    <div id="val-al-alt" class="text-[10.5px]" style="color: var(--bronze-bright);">18 JP d • 36/47 sess</div>
+                                </div>
+                            </div>
+                            <div class="text-right font-telemetry text-[10.5px]">
+                                <div id="val-al-rem" class="font-semibold" style="color: var(--pine-text);">3 App d left</div>
+                                <div id="val-al-sess-rem" style="color: var(--text-muted);">11 sess left</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STUDY 02 DRONE CORE: 3D GIMBALLED BRONZE CAGE + GRAPHITE SPHERE + AUDIO PLASMA -->
+                <div class="lg:col-span-4 order-1 lg:order-2 flex flex-col items-center">
+                    <div class="relative w-[276px] h-[276px] sm:w-[308px] sm:h-[308px] flex items-center justify-center select-none">
+                        <canvas id="drone-core-canvas" class="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing" title="Drag to tilt 3D bronze cage • Click to scan & jump to Today"></canvas>
+                        <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 340 340">
+                            <circle cx="170" cy="170" r="162" fill="none" stroke="currentColor" stroke-opacity="0.14" stroke-width="1"/>
+                            <circle cx="170" cy="170" r="154" fill="none" stroke="#b08d57" stroke-opacity="0.34" stroke-width="0.8" stroke-dasharray="2 4"/>
+                            <line x1="170" y1="3" x2="170" y2="14" stroke="#c8a26a" stroke-opacity="0.7" stroke-width="1.2"/>
+                            <line x1="170" y1="326" x2="170" y2="337" stroke="#c8a26a" stroke-opacity="0.45" stroke-width="1"/>
+                            <line x1="3" y1="170" x2="14" y2="170" stroke="#c8a26a" stroke-opacity="0.45" stroke-width="1"/>
+                            <line x1="326" y1="170" x2="337" y2="170" stroke="#c8a26a" stroke-opacity="0.45" stroke-width="1"/>
+                            <g id="svg-8wk-bezel" class="pointer-events-auto"></g>
+                        </svg>
+                        <div class="absolute bottom-2.5 left-1/2 -translate-x-1/2 pointer-events-none px-2.5 py-0.5 rounded-full border bronze-hairline font-telemetry text-[10px] tracking-wider uppercase whitespace-nowrap" style="background: var(--bg-glass); color: var(--bronze-bright);">
+                            <span id="core-status-pill">CYCLE 1 • WK 1 → WK 2 CTCCU</span>
+                        </div>
+                    </div>
+
+                    <!-- Voice Link & Comms HUD Controls -->
+                    <div class="flex flex-wrap items-center justify-center gap-2 mt-2">
+                        <button type="button" onclick="toggleVoiceMic()" id="btn-voice-mic" class="btn-instrument btn-bronze-solid px-3.5 py-2">
+                            <span id="mic-dot" class="w-2 h-2 rounded-full bg-amber-100"></span>
+                            <span id="mic-btn-label">Voice Link: Push to Speak</span>
+                        </button>
+                        <button type="button" onclick="toggleCommsDrawer()" class="btn-instrument px-3.5 py-2">
+                            <span>⌨</span><span>Comms HUD</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- RIGHT TELEMETRY GAUGES (03 Study Leave & 04 On-Calls / Protect AM) -->
+                <div class="lg:col-span-4 order-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+                    <div class="machined-panel p-3.5">
+                        <div class="flex items-center justify-between">
+                            <span class="font-telemetry text-[10px] uppercase tracking-widest" style="color: var(--bronze-bright);">03 // Study Leave (10d/yr)</span>
+                            <span id="val-sl-rem" class="font-telemetry text-[10px] px-1.5 py-0.5 rounded font-semibold" style="background: var(--violet-soft); color: var(--violet-text);">8d available</span>
+                        </div>
+                        <div class="flex items-center justify-between gap-2 mt-2">
+                            <div class="flex items-center gap-3">
+                                <svg class="w-11 h-11 flex-shrink-0 -rotate-90" viewBox="0 0 48 48">
+                                    <circle cx="24" cy="24" r="19" fill="none" stroke="currentColor" stroke-opacity="0.14" stroke-width="3.6"/>
+                                    <circle id="arc-sl" cx="24" cy="24" r="19" fill="none" stroke="#7c3aed" stroke-width="3.6" stroke-linecap="round" stroke-dasharray="119.38" stroke-dashoffset="95.5"/>
+                                </svg>
+                                <div class="font-telemetry">
+                                    <span id="val-sl-used" class="text-2xl font-bold">2</span>
+                                    <span class="text-xs" style="color: var(--text-muted);">/ 10 Days</span>
+                                    <div class="text-[10.5px]" style="color: var(--text-secondary);">25–26 Nov (Wk 3 Off)</div>
+                                </div>
+                            </div>
+                            <div class="text-right font-telemetry text-[10.5px]">
+                                <div id="val-sl-jp" class="font-semibold" style="color: var(--violet-text);">0 JP d displaced</div>
+                                <div style="color: var(--text-muted);">MMU Senior Leader</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="machined-panel p-3.5">
+                        <div class="flex items-center justify-between">
+                            <span class="font-telemetry text-[10px] uppercase tracking-widest" style="color: var(--bronze-bright);">04 // CTCCU On-Calls</span>
+                            <span id="val-protect-badge" class="font-telemetry text-[10px] px-1.5 py-0.5 rounded font-semibold" style="background: var(--ochre-soft); color: var(--ochre-text);">6 Protect AMs</span>
+                        </div>
+                        <div class="flex items-center justify-between gap-2 mt-2">
+                            <div class="flex items-center gap-3">
+                                <svg class="w-11 h-11 flex-shrink-0 -rotate-90" viewBox="0 0 48 48">
+                                    <circle cx="24" cy="24" r="19" fill="none" stroke="currentColor" stroke-opacity="0.14" stroke-width="3.6"/>
+                                    <circle cx="24" cy="24" r="19" fill="none" stroke="#b08d57" stroke-width="3.6" stroke-dasharray="59.69 59.69" stroke-dashoffset="0"/>
+                                    <circle cx="24" cy="24" r="19" fill="none" stroke="#0284c7" stroke-width="3.6" stroke-dasharray="59.69 59.69" stroke-dashoffset="-59.69"/>
+                                </svg>
+                                <div class="font-telemetry">
+                                    <span id="val-oc-total" class="text-2xl font-bold">14</span>
+                                    <span id="val-oc-split" class="text-xs" style="color: var(--text-muted);">7 CC1 • 7 CC2</span>
+                                    <div id="val-oc-wknd" class="text-[10.5px]" style="color: var(--text-secondary);">4 Wknd + NYD BH</div>
+                                </div>
+                            </div>
+                            <div class="text-right font-telemetry text-[10.5px]">
+                                <div class="font-semibold" style="color: var(--ochre-text);">Post-CC1 Shield</div>
+                                <div style="color: var(--text-muted);">Auto-guard active</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Skaffen Deadpan Readout + Active Family Alert Strip -->
+            <div class="mt-3.5 machined-inset px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 border bronze-hairline">
+                <div class="flex items-center gap-2 min-w-0 flex-1">
+                    <span class="font-telemetry text-[10px] uppercase tracking-widest px-2 py-0.5 rounded flex-shrink-0" style="background: rgba(200,162,106,0.18); color: var(--bronze-bright);">SKAFFEN</span>
+                    <p id="skaffen-readout" class="text-xs italic" style="color: var(--text-primary);">
+                        12th Anniversary logged today. Five consecutive CTCCU days start 08:00 tomorrow; Iona turns nine mid-block on Wednesday (5-day alert active).
+                    </p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span id="voice-freq-badge" class="font-telemetry text-[10px]" style="color: var(--text-muted);">AUDIO: IDLE</span>
+                    <button type="button" onclick="switchDeck('recon')" class="font-telemetry text-[10px] px-2 py-0.5 rounded border bronze-hairline cursor-pointer" style="color: var(--bronze-bright);">
+                        ★ 3 Active Family Prompts →
+                    </button>
+                </div>
+            </div>
+
+            <!-- INTEGRATED FREQUENCY-REACTIVE VOICE & TEXT COMMS HUD -->
+            <div id="comms-drawer" class="hidden mt-3.5 machined-panel overflow-hidden border" style="border-color: var(--border-bronze-strong);">
+                <div class="px-4 py-2.5 border-b bronze-hairline flex flex-wrap items-center justify-between gap-2" style="background: var(--bg-elevated);">
+                    <div class="flex items-center gap-2">
+                        <span id="comms-status-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                        <span class="font-editorial text-lg font-bold">Skaffen-Amtiskaw // Live Comms HUD</span>
+                        <span class="font-telemetry text-[10px] px-2 py-0.5 rounded border bronze-hairline" style="color: var(--bronze-bright);">Gemini Live (Charon) + Sheet Sync + UK TTS</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" onclick="toggleTtsVoice()" id="btn-tts-toggle" class="btn-instrument py-1 px-2.5 text-[11px]">🔊 Spoken Reply: ON</button>
+                        <button type="button" onclick="toggleCommsDrawer(false)" class="btn-instrument py-1 px-2.5 text-[11px]">&times; Hide</button>
+                    </div>
+                </div>
+                <div class="px-4 py-2 border-b bronze-hairline flex items-center gap-1.5 overflow-x-auto" style="background: var(--bg-abyss);">
+                    <span class="font-telemetry text-[10px] uppercase tracking-wider flex-shrink-0" style="color: var(--bronze-bright);">Quick Commands:</span>
+                    <button type="button" onclick="submitCommsPrompt('Hold Hermanos Gutiérrez')" class="chip-btn whitespace-nowrap">Hold Hermanos Gutiérrez</button>
+                    <button type="button" onclick="submitCommsPrompt('Draft leave on 14 April')" class="chip-btn whitespace-nowrap">Draft leave on 14 April</button>
+                    <button type="button" onclick="submitCommsPrompt('Jump to July')" class="chip-btn whitespace-nowrap">Jump to July</button>
+                    <button type="button" onclick="submitCommsPrompt('Audit December on-call pinch points and Blair birthday clash')" class="chip-btn whitespace-nowrap">Audit Dec pinch points</button>
+                </div>
+                <div id="comms-log" class="max-h-[240px] overflow-y-auto p-3.5 space-y-2.5 text-xs leading-relaxed"></div>
+                <form onsubmit="onCommsFormSubmit(event)" class="p-3 border-t bronze-hairline flex flex-wrap sm:flex-nowrap items-center gap-2" style="background: var(--bg-elevated);">
+                    <button type="button" onclick="toggleVoiceMic()" id="btn-hud-mic" class="btn-instrument px-3 py-2 flex-shrink-0">
+                        <span>🎙</span><span id="hud-mic-label" class="font-telemetry text-[11px]">Listen</span>
+                    </button>
+                    <input id="comms-input" type="text" placeholder="Speak or type: 'Hold Hermanos Gutiérrez', 'Draft leave on 14 April', 'Jump to July'..." class="flex-1 min-w-[180px] px-3 py-2 rounded-lg text-xs machined-panel focus:outline-none" style="color: var(--text-primary);">
+                    <button type="submit" id="btn-comms-send" class="btn-instrument btn-bronze-solid px-4 py-2">Transmit</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN MULTI-DECK WORKSPACE -->
+    <main class="max-w-[1440px] mx-auto px-3 sm:px-6 pt-5 space-y-6">
+
+        <!-- ==================================================================
+             DECK 01: 39-WEEK STRATA RIBBON + 14-DAY FLIGHT STRIP
+             ================================================================== -->
+        <section id="deck-flight" class="space-y-4">
+            <!-- Upcoming Staged Family Banner Strip (Immediate Visibility) -->
+            <div id="top-family-strip" class="grid grid-cols-1 md:grid-cols-3 gap-2.5"></div>
+
+            <div class="machined-panel p-4 space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <span class="font-telemetry text-[10px] uppercase tracking-widest" style="color: var(--bronze-bright);">39-Week Strata Horizon • w/c 9 Nov 2026 – 8 Aug 2027</span>
+                        <h2 class="font-editorial text-xl sm:text-2xl font-bold leading-tight">14-Day Tactical Flight Strip</h2>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <button type="button" onclick="stepWindow(-1)" class="btn-instrument px-2.5 py-1.5">◀ Prev Wk</button>
+                        <button type="button" onclick="jumpToToday()" class="btn-instrument btn-bronze-solid px-3 py-1.5">⌖ Today (15 Nov)</button>
+                        <button type="button" onclick="stepWindow(1)" class="btn-instrument px-2.5 py-1.5">Next Wk ▶</button>
+                        <button type="button" onclick="toggleExpandAllWeeks()" id="btn-expand-all" class="btn-instrument px-3 py-1.5">Show All 39 Wks</button>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t bronze-hairline">
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <span class="font-telemetry text-[10px] uppercase" style="color: var(--text-muted);">Strata:</span>
+                        <button type="button" onclick="setStrataFilter('all')" id="sf-all" class="chip-btn active">All 39 Wks</button>
+                        <button type="button" onclick="setStrataFilter('pinch')" id="sf-pinch" class="chip-btn">⚠ Pinch &amp; Protect AM</button>
+                        <button type="button" onclick="setStrataFilter('optimiser')" id="sf-optimiser" class="chip-btn">✦ Wk 7 Sweet Spots</button>
+                        <button type="button" onclick="setStrataFilter('held')" id="sf-held" class="chip-btn">★ Family &amp; Held Gigs</button>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <span class="font-telemetry text-[10px] uppercase" style="color: var(--bronze-bright);">Tap Action:</span>
+                        <button type="button" onclick="setTapMode('inspect')" id="tm-inspect" class="chip-btn active">🔍 Inspect</button>
+                        <button type="button" onclick="setTapMode('draft_al')" id="tm-draft_al" class="chip-btn">+ Draft AL</button>
+                        <button type="button" onclick="setTapMode('draft_sl')" id="tm-draft_sl" class="chip-btn">+ Draft SL</button>
+                        <button type="button" onclick="setTapMode('cc1')" id="tm-cc1" class="chip-btn">+ CC1</button>
+                        <button type="button" onclick="setTapMode('cc2')" id="tm-cc2" class="chip-btn">+ CC2</button>
+                    </div>
+                </div>
+
+                <div class="hidden sm:flex justify-between font-telemetry text-[10px] px-1" style="color: var(--text-muted);">
+                    <span>NOV 26</span><span>DEC 26</span><span>JAN 27</span><span>FEB 27</span><span>MAR 27</span>
+                    <span>APR 27</span><span>MAY 27</span><span>JUN 27</span><span>JUL 27</span><span>AUG 27</span>
+                </div>
+                <div class="overflow-x-auto pb-1">
+                    <div id="strata-track" class="flex items-stretch min-w-[620px] rounded-lg overflow-hidden border bronze-hairline" style="background: var(--bg-abyss);"></div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-3 text-[10.5px] font-telemetry" style="color: var(--text-secondary);">
+                    <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm" style="background:var(--oxblood);"></span>CTCCU</span>
+                    <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm" style="background:var(--ochre);"></span>Cardiac Th</span>
+                    <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm" style="background:var(--teal);"></span>Flex</span>
+                    <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm" style="background:var(--pine);"></span>Leave</span>
+                    <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm" style="background:var(--sky);"></span>CC2</span>
+                    <span class="inline-flex items-center gap-1.5"><span style="color:var(--bronze-bright);">★</span>Held Gig / Family</span>
+                </div>
+            </div>
+
+            <div id="flight-weeks-container" class="space-y-4"></div>
+        </section>
+
+        <!-- ==================================================================
+             DECK 02: STAGED FAMILY RADAR + PERFORATED VERIFIED RECON SLIPS
+             ================================================================== -->
+        <section id="deck-recon" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+                <!-- Left 5 Cols: All 12 Recurring Family Milestones -->
+                <div class="lg:col-span-5 machined-panel p-4 sm:p-5 space-y-3.5">
+                    <div class="flex items-center justify-between pb-2.5 border-b bronze-hairline">
+                        <div>
+                            <span class="font-telemetry text-[10px] uppercase tracking-widest" style="color: var(--bronze-bright);">Anchored Sun 15 Nov 2026 • 12 Annual Dates</span>
+                            <h2 class="font-editorial text-2xl font-bold">Staged Family Milestone Radar</h2>
+                        </div>
+                        <span class="font-telemetry text-[10px] px-2 py-0.5 rounded border bronze-hairline" style="color: var(--pine-text);">21d &amp; 5d Rules</span>
+                    </div>
+                    <p class="text-xs" style="color: var(--text-secondary);">
+                        Triggers 21-day gift/table booking windows and 5-day card prompts cross-referenced against your live MFT rota. Mark items sorted to quieten prompts.
+                    </p>
+                    <div id="family-milestone-list" class="space-y-2.5 max-h-[760px] overflow-y-auto pr-1"></div>
+                </div>
+
+                <!-- Right 7 Cols: Verified Greater Manchester Perforated Recon Slips -->
+                <div class="lg:col-span-7 machined-panel p-4 sm:p-5 space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b bronze-hairline">
+                        <div>
+                            <span class="font-telemetry text-[10px] uppercase tracking-widest" style="color: var(--bronze-bright);">Verified Primary Box Office • Live 3-Day Clearance Strips</span>
+                            <h2 class="font-editorial text-2xl font-bold">Perforated Recon Slips</h2>
+                        </div>
+                        <span class="font-telemetry text-[10.5px]" style="color: var(--text-muted);">Updates live with Sandbox Leave</span>
+                    </div>
+
+                    <!-- Exact Requested Category Filter Pills -->
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <button type="button" onclick="setReconCat('all')" id="rc-all" class="chip-btn active">All (8)</button>
+                        <button type="button" onclick="setReconCat('music')" id="rc-music" class="chip-btn">Live Music</button>
+                        <button type="button" onclick="setReconCat('dining')" id="rc-dining" class="chip-btn">Open-Fire &amp; Dining</button>
+                        <button type="button" onclick="setReconCat('culture')" id="rc-culture" class="chip-btn">Family / Culture</button>
+                        <button type="button" onclick="setReconCat('zero')" id="rc-zero" class="chip-btn">✓ Zero-Friction Only</button>
+                    </div>
+
+                    <div id="recon-slips-list" class="space-y-3.5 px-1"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================================================================
+             DECK 03: FRIDAY 2PM WEEKEND HEARTH & PEAK DISPATCH
+             ================================================================== -->
+        <section id="deck-hearth" class="hidden space-y-5">
+            <div class="machined-panel p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <span class="font-telemetry text-[10px] uppercase tracking-widest" style="color: var(--bronze-bright);">Friday 14:00 Field Dispatch • Kamado Joe &amp; Dark Peak Contours</span>
+                    <h2 class="font-editorial text-2xl sm:text-3xl font-bold">Weekend Hearth &amp; Peak Dispatch</h2>
+                </div>
+                <button type="button" onclick="refreshHearthViaGemini()" id="btn-refresh-hearth" class="btn-instrument btn-bronze-solid">
+                    <span>✦</span><span id="refresh-hearth-label">Refresh Dispatch (Gemini)</span>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                <!-- Left 7 Cols: Kamado Joe Live-Fire Scaler (2 to 8 Guests) -->
+                <div class="lg:col-span-7 machined-panel p-4 sm:p-5 space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b bronze-hairline">
+                        <div class="flex flex-wrap gap-1.5">
+                            <button type="button" onclick="selectFireCook('venison')" id="fc-venison" class="chip-btn active">01 // Oak-Smoked Venison Haunch</button>
+                            <button type="button" onclick="selectFireCook('monkfish')" id="fc-monkfish" class="chip-btn">02 // Charcoal-Roasted Monkfish Tail</button>
+                            <button type="button" onclick="selectFireCook('ai')" id="fc-ai" class="chip-btn hidden">03 // Bespoke AI Fire Cook</button>
+                        </div>
+                        <div class="flex items-center gap-1.5 machined-inset px-2.5 py-1 border bronze-hairline">
+                            <span class="font-telemetry text-[10.5px]" style="color: var(--text-secondary);">Guests:</span>
+                            <button type="button" onclick="adjustGuests(-1)" class="px-2 py-0.5 rounded border bronze-hairline font-telemetry text-xs cursor-pointer">−</button>
+                            <span id="guest-count-val" class="font-telemetry text-sm font-bold px-1.5" style="color: var(--bronze-bright);">4</span>
+                            <button type="button" onclick="adjustGuests(1)" class="px-2 py-0.5 rounded border bronze-hairline font-telemetry text-xs cursor-pointer">+</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 id="fire-title" class="font-editorial text-2xl font-bold"></h3>
+                        <p id="fire-desc" class="text-xs mt-1 leading-relaxed" style="color: var(--text-secondary);"></p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        <div class="machined-inset p-3">
+                            <span class="font-telemetry text-[9.5px] uppercase block" style="color: var(--text-muted);">Dome Temp Stages</span>
+                            <span id="fire-temps" class="font-telemetry text-xs font-semibold"></span>
+                        </div>
+                        <div class="machined-inset p-3">
+                            <span class="font-telemetry text-[9.5px] uppercase block" style="color: var(--text-muted);">Smoking Wood Pairing</span>
+                            <span id="fire-wood" class="font-telemetry text-xs font-semibold" style="color: var(--bronze-bright);"></span>
+                        </div>
+                        <div class="machined-inset p-3">
+                            <span class="font-telemetry text-[9.5px] uppercase block" style="color: var(--text-muted);">Internal Probe Target</span>
+                            <span id="fire-probe" class="font-telemetry text-xs font-semibold" style="color: var(--oxblood-text);"></span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 pt-1">
+                        <div class="md:col-span-5">
+                            <h4 class="font-telemetry text-[10.5px] uppercase tracking-wider mb-2" style="color: var(--bronze-bright);">
+                                Provisioning (<span id="ing-guest-label">4</span> Covers)
+                            </h4>
+                            <ul id="fire-ingredients" class="space-y-1.5 font-telemetry text-xs"></ul>
+                        </div>
+                        <div class="md:col-span-7">
+                            <h4 class="font-telemetry text-[10.5px] uppercase tracking-wider mb-2" style="color: var(--bronze-bright);">Kamado Execution</h4>
+                            <ol id="fire-steps" class="space-y-2 text-xs leading-relaxed list-decimal list-inside"></ol>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right 5 Cols: Finley-Cleared Peak Trail Card + Iona Dark-Sky Target -->
+                <div class="lg:col-span-5 space-y-4">
+                    <div class="machined-panel p-4 sm:p-5 space-y-3.5">
+                        <div class="flex flex-wrap gap-1.5 pb-2.5 border-b bronze-hairline">
+                            <button type="button" onclick="selectTrail('shining')" id="tr-shining" class="chip-btn active">Shining Tor &amp; Errwood</button>
+                            <button type="button" onclick="selectTrail('kinder')" id="tr-kinder" class="chip-btn">Kinder &amp; William Clough</button>
+                            <button type="button" onclick="selectTrail('ai')" id="tr-ai" class="chip-btn hidden">Bespoke AI Loop</button>
+                        </div>
+                        <div class="flex items-center justify-between font-telemetry text-xs">
+                            <span id="trail-stats" style="color: var(--pine-text);"></span>
+                            <span id="trail-os" class="px-2 py-0.5 rounded border bronze-hairline" style="color: var(--bronze-bright);"></span>
+                        </div>
+                        <h3 id="trail-title" class="font-editorial text-xl font-bold"></h3>
+                        <p id="trail-desc" class="text-xs leading-relaxed" style="color: var(--text-secondary);"></p>
+                        <div class="space-y-2 pt-1 text-xs">
+                            <div class="machined-inset p-2.5">
+                                <span class="font-telemetry text-[9.5px] uppercase block" style="color: var(--bronze-bright);">Fox-Red Lab Finley // Paw &amp; Lead Notes</span>
+                                <span id="trail-finley"></span>
+                            </div>
+                            <div class="machined-inset p-2.5">
+                                <span class="font-telemetry text-[9.5px] uppercase block" style="color: var(--bronze-bright);">Post-Walk Hearth Pub</span>
+                                <span id="trail-pub"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dark-Sky Astronomy Card for Iona -->
+                    <div class="machined-panel p-4 sm:p-5 space-y-2">
+                        <div class="flex items-center justify-between pb-2 border-b bronze-hairline">
+                            <span class="font-telemetry text-[10px] uppercase tracking-widest" style="color: var(--bronze-bright);">Dark-Sky Sightline with Iona</span>
+                            <span id="sky-azimuth" class="font-telemetry text-[10.5px]" style="color: var(--ochre-text);"></span>
+                        </div>
+                        <h3 id="sky-title" class="font-editorial text-lg font-bold"></h3>
+                        <p id="sky-desc" class="text-xs leading-relaxed" style="color: var(--text-secondary);"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- DAY INSPECTOR MODAL -->
+    <div id="day-modal" class="modal-backdrop hidden" onclick="if(event.target===this)closeDayModal()">
+        <div class="machined-panel w-full max-w-md overflow-hidden">
+            <div class="p-4 border-b bronze-hairline flex items-center justify-between" style="background: var(--bg-elevated);">
+                <div>
+                    <div id="modal-jp-tag" class="font-telemetry text-[10px] uppercase tracking-widest" style="color: var(--bronze-bright);"></div>
+                    <h3 id="modal-date-title" class="font-editorial text-2xl font-bold"></h3>
+                </div>
+                <button type="button" onclick="closeDayModal()" class="btn-instrument px-2.5 py-1">&times;</button>
+            </div>
+            <div class="p-4 space-y-3.5 text-xs">
+                <div id="modal-info-rows" class="machined-inset p-3 space-y-2"></div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button type="button" onclick="modalToggle('draft_al')" class="btn-instrument">Toggle Draft AL</button>
+                    <button type="button" onclick="modalToggle('draft_sl')" class="btn-instrument">Toggle Draft SL</button>
+                    <button type="button" onclick="modalToggle('cc1')" class="btn-instrument">Toggle CC1 (1st)</button>
+                    <button type="button" onclick="modalToggle('cc2')" class="btn-instrument">Toggle CC2 (2nd)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LEAVE LEDGER MODAL -->
+    <div id="ledger-modal" class="modal-backdrop hidden" onclick="if(event.target===this)closeLedgerModal()">
+        <div class="machined-panel w-full max-w-2xl max-h-[86vh] overflow-y-auto">
+            <div class="p-4 border-b bronze-hairline flex items-center justify-between" style="background: var(--bg-elevated);">
+                <div>
+                    <span class="font-telemetry text-[10px] uppercase tracking-widest" style="color: var(--bronze-bright);">Anchored JP Wk 2 CTCCU = w/c 16 Nov 2026</span>
+                    <h3 class="font-editorial text-2xl font-bold">Annualised MFT Job Plan &amp; Leave Ledger</h3>
+                </div>
+                <button type="button" onclick="closeLedgerModal()" class="btn-instrument px-2.5 py-1">&times;</button>
+            </div>
+            <div class="p-4 space-y-3 text-xs font-telemetry">
+                <table class="w-full border-collapse text-[11px]">
+                    <thead>
+                        <tr class="border-b bronze-hairline text-left" style="color: var(--bronze-bright);">
+                            <th class="py-2">Approved Block</th><th class="py-2">App</th><th class="py-2">JP Working</th><th class="py-2">CT Replaced</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y" style="border-color: var(--border-subtle);">
+                        <tr><td class="py-1.5">SL: 25–26 Nov 2026</td><td>2d</td><td>0 JP d</td><td>0.0 CT d (Wk 3 Off)</td></tr>
+                        <tr><td class="py-1.5">AL: 23 Dec 2026</td><td>1d</td><td>1 JP d (3.0 PA)</td><td>1.0 CT d (Wk 7 Flex)</td></tr>
+                        <tr><td class="py-1.5">AL: 15 Jan 2027</td><td>1d</td><td>1 JP d (2.5 PA)</td><td>1.0 CT d (Wk 2 CTCCU)</td></tr>
+                        <tr><td class="py-1.5">AL: 31 Mar–6 Apr 2027</td><td>5d</td><td>4 JP d (11.0 PA)</td><td>1.0 CT d (Easter Sharm)</td></tr>
+                        <tr><td class="py-1.5">AL: 24 May–1 Jun 2027</td><td>7d</td><td>6 JP d (16.0 PA)</td><td>1.0 CT d (May Half-Term)</td></tr>
+                        <tr><td class="py-1.5">AL: 2 Jul–19 Jul 2027</td><td>17d</td><td>6 JP d (15.0 PA)</td><td>1.0 CT d (USA Road Trip)</td></tr>
+                        <tr class="font-bold" style="background: var(--bg-elevated);">
+                            <td class="py-2">Total Baseline</td><td>31/34d</td><td>18d (36/47s)</td><td style="color: var(--pine-text);">34.0 Net CT Delivered</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- CLOUD LINK, SHEET SCOUTS & STANDALONE PWA DEPLOY MODAL -->
+    <div id="cloud-modal" class="modal-backdrop hidden" onclick="if(event.target===this)closeCloudModal()">
+        <div class="machined-panel w-full max-w-xl max-h-[90vh] overflow-y-auto">
+            <div class="p-4 border-b bronze-hairline flex items-center justify-between" style="background: var(--bg-elevated);">
+                <div>
+                    <span class="font-telemetry text-[10px] uppercase tracking-widest" style="color: var(--bronze-bright);">Skaffen_Command_DB // Google Apps Script Bridge</span>
+                    <h3 class="font-editorial text-2xl font-bold">Cloud Link &amp; Deploy</h3>
+                </div>
+                <button type="button" onclick="closeCloudModal()" class="btn-instrument px-2.5 py-1">&times;</button>
+            </div>
+            <div class="p-4 space-y-4 text-xs">
+                <div class="space-y-2.5">
+                    <div>
+                        <label class="font-telemetry text-[10px] uppercase tracking-wider block mb-1" style="color: var(--bronze-bright);">Apps Script Web App Endpoint (/exec)</label>
+                        <input id="inp-backend-url" type="url" class="w-full px-3 py-2 rounded-lg font-telemetry text-[11px] machined-inset focus:outline-none" style="color: var(--text-primary);">
+                    </div>
+                    <div>
+                        <label class="font-telemetry text-[10px] uppercase tracking-wider block mb-1" style="color: var(--bronze-bright);">Passcode (Stored Locally on Device Only — Never Exported)</label>
+                        <div class="flex flex-wrap sm:flex-nowrap gap-2">
+                            <input id="inp-passcode" type="password" autocomplete="off" placeholder="Enter SKAFFEN_PASSCODE..." class="flex-1 min-w-[180px] px-3 py-2 rounded-lg font-telemetry text-xs machined-inset focus:outline-none" style="color: var(--text-primary);">
+                            <button type="button" onclick="saveCloudCredentials()" class="btn-instrument btn-bronze-solid px-4">Save &amp; Sync</button>
+                            <button type="button" onclick="disconnectCloud()" class="btn-instrument px-2.5" title="Clear local passcode &amp; run offline">Local</button>
+                        </div>
+                    </div>
+                    <div id="cloud-diag-line" class="font-telemetry text-[10.5px] px-3 py-2 rounded machined-inset" style="color: var(--text-secondary);">
+                        Enter your passcode and click Save &amp; Sync to link Skaffen_Command_DB and arm Charon Live voice.
+                    </div>
+                </div>
+
+                <div class="pt-3 border-t bronze-hairline space-y-2">
+                    <span class="font-telemetry text-[10px] uppercase tracking-wider block" style="color: var(--bronze-bright);">On-Demand Backend Triggers</span>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        <button type="button" onclick="syncFromCloud(true)" class="btn-instrument py-2">↻ Sync Sheet Now</button>
+                        <button type="button" onclick="triggerRemoteScout('music')" class="btn-instrument py-2">🎸 Scout Music Now</button>
+                        <button type="button" onclick="triggerRemoteScout('food')" class="btn-instrument py-2">🔥 Scout Food Now</button>
+                        <button type="button" onclick="triggerRemoteScout('hearth')" class="btn-instrument py-2">🏔 Refresh Hearth Dispatch</button>
+                    </div>
+                </div>
+
+                <div class="pt-3 border-t bronze-hairline flex flex-wrap items-center justify-between gap-2">
+                    <div class="max-w-xs">
+                        <div class="font-telemetry text-[10.5px] font-semibold" style="color: var(--text-primary);">Deployable Standalone PWA</div>
+                        <p class="text-[11px]" style="color: var(--text-muted);">Exports clean, credential-free <code>index.html</code> with Highland Dusk manifest &amp; SVG icon for Cloudflare / GitHub Pages &amp; Pixel 11 Pro XL install.</p>
+                    </div>
+                    <button type="button" onclick="downloadDeployableHtml()" class="btn-instrument btn-bronze-solid py-2 px-3.5">⬇ Download Deployable index.html</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[180] pointer-events-none opacity-0 transition-opacity duration-200 machined-panel px-4 py-2 font-telemetry text-xs border" style="border-color: var(--border-bronze-strong);"></div>
+
+    <script>
+        /* ==========================================================================
+           1. DATA MODEL, 8-WEEK MFT ROTA ENGINE & SAFE STORAGE
+           ========================================================================== */
+        const STORAGE_KEY = 'skaffen_v2_pass3_state';
+        const DEFAULT_BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwImEgxTyblXiaA4sRxcHn4GETScu6cUI_1lSutScOn7BYbtBHxr6-8LQ0DBnF5ueP83A/exec';
+        const TODAY_ISO = '2026-11-15';
+        const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const DAY_SHORT = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+        const DAY_FULL = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
+        const memFallback = {};
+        const safeGet = k => { try { return localStorage.getItem(k); } catch(e) { return memFallback[k] || null; } };
+        const safeSet = (k, v) => { memFallback[k] = v; try { localStorage.setItem(k, v); } catch(e) {} };
+
+        let toastTimer = null;
+        function showToast(msg) {
+            const el = document.getElementById('toast');
+            el.textContent = msg; el.style.opacity = '1';
+            clearTimeout(toastTimer); toastTimer = setTimeout(() => el.style.opacity = '0', 2900);
+        }
+
+        const toISO = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+        const parseISO = s => { const p = s.split('-'); return new Date(+p[0], +p[1]-1, +p[2]); };
+        const shiftISO = (s, n) => { const d = parseISO(s); d.setDate(d.getDate()+n); return toISO(d); };
+        const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+        const SESS = {
+            MGMT:    { type:'MGMT',    short:'Mgmt',    label:'Management',        pas:2.5, sess:2, clinical:false },
+            CTCCU:   { type:'CTCCU',   short:'CTCCU',   label:'CTCCU',             pas:2.5, sess:2, clinical:true  },
+            CARDIAC: { type:'CARDIAC', short:'Theatre', label:'Cardiac Theatre',   pas:3.5, sess:2, clinical:true  },
+            FLEX:    { type:'FLEX',    short:'Flex',    label:'Flexible Clinical', pas:3.0, sess:2, clinical:true  },
+            OFF:     { type:'OFF',     short:'Off',     label:'Off',               pas:0,   sess:0, clinical:false },
+            WKND:    { type:'WKND',    short:'Wknd',    label:'Weekend',           pas:0,   sess:0, clinical:false }
+        };
+
+        const JOB_PLAN = {
+            1: [SESS.MGMT, SESS.MGMT, SESS.OFF,     SESS.OFF,  SESS.OFF,  SESS.WKND, SESS.WKND],
+            2: [SESS.CTCCU,SESS.CTCCU,SESS.CTCCU,   SESS.CTCCU,SESS.CTCCU,SESS.WKND, SESS.WKND],
+            3: [SESS.MGMT, SESS.MGMT, SESS.OFF,     SESS.OFF,  SESS.OFF,  SESS.WKND, SESS.WKND],
+            4: [SESS.MGMT, SESS.MGMT, SESS.OFF,     SESS.OFF,  SESS.OFF,  SESS.WKND, SESS.WKND],
+            5: [SESS.MGMT, SESS.MGMT, SESS.CARDIAC, SESS.OFF,  SESS.MGMT, SESS.WKND, SESS.WKND],
+            6: [SESS.MGMT, SESS.MGMT, SESS.OFF,     SESS.OFF,  SESS.MGMT, SESS.WKND, SESS.WKND],
+            7: [SESS.MGMT, SESS.MGMT, SESS.FLEX,    SESS.OFF,  SESS.OFF,  SESS.WKND, SESS.WKND],
+            8: [SESS.MGMT, SESS.MGMT, SESS.CARDIAC, SESS.OFF,  SESS.MGMT, SESS.WKND, SESS.WKND]
+        };
+
+        const DEFAULT_ONCALLS = {
+            '2026-11-23':'CC1','2026-12-08':'CC2','2026-12-10':'CC1','2026-12-14':'CC1',
+            '2026-12-26':'CC2','2026-12-27':'CC1','2027-01-01':'CC1','2027-01-13':'CC2',
+            '2027-01-20':'CC2','2027-02-04':'CC1','2027-02-13':'CC2','2027-02-14':'CC1',
+            '2027-02-24':'CC2','2027-02-26':'CC2'
+        };
+
+        const BANK_HOLIDAYS = {
+            '2026-12-25':'Xmas Day','2026-12-28':'Boxing Day BH','2027-01-01':"New Year's BH",
+            '2027-03-26':'Good Friday','2027-03-29':'Easter Mon','2027-05-03':'May Day BH','2027-05-31':'Spring BH'
+        };
+
+        function buildDefaultLeaves() {
+            const m = {
+                '2026-11-25':{ type:'SL', status:'Approved', note:'Study Leave (2d)' },
+                '2026-11-26':{ type:'SL', status:'Approved', note:'Study Leave (2d)' },
+                '2026-12-23':{ type:'AL', status:'Approved', note:'Annual Leave (1d)' },
+                '2027-01-15':{ type:'AL', status:'Approved', note:'Annual Leave (1d)' }
+            };
+            const addWeekdays = (a, b, note) => {
+                for (let c = parseISO(a), e = parseISO(b); c <= e; c.setDate(c.getDate()+1)) {
+                    if (c.getDay() !== 0 && c.getDay() !== 6) m[toISO(c)] = { type:'AL', status:'Approved', note };
+                }
+            };
+            addWeekdays('2027-03-31','2027-04-06','Easter AL (5d)');
+            addWeekdays('2027-05-24','2027-06-01','Late May AL (7d)');
+            addWeekdays('2027-07-02','2027-07-19','Summer AL (17d)');
+            return m;
+        }
+
+        /* 12 Recurring Family Dates (Anchored to Today = 15 Nov 2026) */
+        const FAMILY_DATES = [
+            { id:'anniv',   m:11, d:15, name:"Richard & Rachel Anniversary", short:"Anniversary" },
+            { id:'iona',    m:11, d:18, name:"Iona's 9th Birthday",          short:"Iona B'day" },
+            { id:'mum',     m:11, d:28, name:"Mum's Birthday",               short:"Mum B'day" },
+            { id:'rebecca', m:12, d:9,  name:"Rebecca's Birthday",           short:"Rebecca B'day" },
+            { id:'blair',   m:12, d:10, name:"Blair's Birthday",             short:"Blair B'day" },
+            { id:'richard', m:12, d:16, name:"Richard's Birthday",           short:"My B'day" },
+            { id:'minnie',  m:3,  d:20, name:"Minnie's Birthday",            short:"Minnie B'day" },
+            { id:'robbie',  m:4,  d:22, name:"Robbie's Birthday",            short:"Robbie B'day" },
+            { id:'corey',   m:6,  d:5,  name:"Corey's Birthday",             short:"Corey B'day" },
+            { id:'kate',    m:6,  d:17, name:"Kate's Birthday",              short:"Kate B'day" },
+            { id:'megan',   m:7,  d:27, name:"Megan's Birthday",             short:"Megan B'day" },
+            { id:'rachel',  m:10, d:25, name:"Rachel's Birthday",            short:"Rachel B'day" }
+        ];
+
+        /* 8 Verified Greater Manchester Listings */
+        const VERIFIED_RECON = [
+            {
+                id:'wtlgi-beaujolais', cat:'dining', iso:'2026-11-19',
+                title:'Beaujolais Nouveau Dinner @ Where The Light Gets In',
+                venue:'Rostron Brow, Stockport • Thu 19 Nov 2026',
+                url:'https://www.wtlgi.co/',
+                note:'Landing on your doorstep in Stockport, unfortunately plum in the middle of five straight CTCCU shifts with Day 5 starting 08:00 Friday. Draft Friday AL first or admire from afar.'
+            },
+            {
+                id:'waylon-wyatt', cat:'music', iso:'2026-11-22',
+                title:'Waylon Wyatt @ Albert Hall',
+                venue:'Peter St, Manchester • Sun 22 Nov 2026',
+                url:'https://alberthallmanchester.com/whats-on/',
+                note:'Red-dirt Americana upgraded to the Wesleyan chapel. Sunday night itself is clear post-CTCCU; Monday daytime is Management before your Monday night CC1 shift.'
+            },
+            {
+                id:'hermanos-gutierrez', cat:'music', iso:'2026-12-02',
+                title:'Hermanos Gutiérrez @ Albert Hall',
+                venue:'Peter St, Manchester • Wed 2 Dec 2026',
+                url:'https://alberthallmanchester.com/whats-on/',
+                note:'Desert-noir instrumental guitar inside a spotless JP Week 4 pocket: Tuesday Management done, Wednesday Off, Thursday Off. Zero clinical friction.'
+            },
+            {
+                id:'stow-counter', cat:'dining', iso:'2026-12-04',
+                title:'Open-Fire Counter Tasting @ Stow',
+                venue:'62 Bridge St, Manchester • Fri 4 Dec 2026',
+                url:'https://www.stowmcr.co.uk/',
+                note:'Michelin-listed wood and charcoal kitchen counter. Sits on a clear Week 4 Friday Off rolling into an unencumbered weekend before December’s triple on-call gauntlet.'
+            },
+            {
+                id:'prehistoric-planet', cat:'culture', iso:'2026-12-12',
+                title:'Prehistoric Planet: Discovering Dinosaurs @ Lightroom',
+                venue:'Aviva Studios, Manchester • Sat 12 Dec 2026 (Runs 8 Dec–6 Jan)',
+                url:'https://factoryinternational.org/whats-on/',
+                note:'360° Factory International projection scored by Hans Zimmer—prime Saturday outing with Iona once Friday’s Post-CC1 Protected Management morning is behind you.'
+            },
+            {
+                id:'milk-carton-kids', cat:'music', iso:'2027-01-16',
+                title:'The Milk Carton Kids @ Albert Hall',
+                venue:'Peter St, Manchester • Sat 16 Jan 2027',
+                url:'https://alberthallmanchester.com/whats-on/',
+                note:'Razor-sharp harmonies and deadpan banter, cushioned inside a 3-day weekend thanks to your pre-approved Friday 15 Jan Annual Leave.'
+            },
+            {
+                id:'ride-albert', cat:'music', iso:'2027-02-18',
+                title:'Ride @ Albert Hall',
+                venue:'Peter St, Manchester • Thu 18 Feb 2027',
+                url:'https://alberthallmanchester.com/whats-on/',
+                note:'Oxford shoegaze benchmark landing on a JP Week 7 Thursday Off with Friday also Off. Clean run both sides.'
+            },
+            {
+                id:'rodrigo-gabriela', cat:'music', iso:'2027-03-19',
+                title:'Rodrigo y Gabriela @ Albert Hall',
+                venue:'Peter St, Manchester • Fri 19 Mar 2027',
+                url:'https://alberthallmanchester.com/whats-on/',
+                note:'Percussive acoustic fireworks on a clear JP Week 3 Friday Off, rolling into a free weekend (note Minnie’s birthday Saturday 20 March).'
+            }
+        ];
+
+        /* Deck 03 Hearth & Peak Presets */
+        const FIRE_COOKS = {
+            venison: {
+                title:'Oak-Smoked Reverse-Sear Venison Haunch with Juniper & Blackberry Jus',
+                desc:'Lean Highland venison gently kissed with English oak over ceramic deflectors before a hard cast-iron crust, finished with crushed juniper, bone stock, and tart blackberries.',
+                temps:'110°C Indirect Smoke → 235°C Cast-Iron Sear',
+                wood:'Seasoned English Oak (1 fist chunk)',
+                probe:'48°C Pull → 52°C Rested (Ruby Medium-Rare)',
+                ings:[
+                    { n:'Rolled bone-out venison haunch', q:220, u:'g' },
+                    { n:'Crushed juniper berries & black pepper', q:0.75, u:'tsp' },
+                    { n:'Fresh or frozen blackberries', q:35, u:'g' },
+                    { n:'Rich game / beef reduction & port', q:65, u:'ml' },
+                    { n:'Cold unsalted butter & garden rosemary', q:15, u:'g' }
+                ],
+                steps:[
+                    'Dry-brine venison haunch uncovered for 4 hours with flaky sea salt, crushed juniper, and finely chopped garden rosemary.',
+                    'Set Kamado Joe to 110°C indirect with ceramic heat deflectors and one dry chunk of oak; smoke until core probe hits 44°C.',
+                    'Rest haunch loosely under foil while opening vents and bringing the cast-iron grate or Soapstone to 235°C.',
+                    'Sear 75 seconds per face until deeply caramelised (pull at 48°C); deglaze skillet with port, stock, and blackberries, whisking in cold butter while meat rests 12 minutes.'
+                ]
+            },
+            monkfish: {
+                title:'Charcoal-Roasted Monkfish Tail with Brown Butter, Capers & Garden Rosemary',
+                desc:'Firm monkfish tail roasted on the central bone over glowing lumpwood embers and basted continuously with foaming nut-brown butter, Lilliput capers, and crisp rosemary.',
+                temps:'205°C Two-Zone Direct Lumpwood + Pan Baste',
+                wood:'Clean Lumpwood + Sliver of Applewood',
+                probe:'55°C Pull → 58°C Rested (Pearly & Lobster-Firm)',
+                ings:[
+                    { n:'Trimmed monkfish tail on the bone', q:240, u:'g' },
+                    { n:'Salted cultured butter', q:22, u:'g' },
+                    { n:'Lilliput capers & unwaxed lemon juice', q:0.75, u:'tbsp' },
+                    { n:'Garden rosemary & chives (chopped)', q:0.5, u:'tbsp' },
+                    { n:'Smoked sweet pimentón & sea salt', q:0.4, u:'tsp' }
+                ],
+                steps:[
+                    'Pat monkfish tail dry, rub lightly with olive oil, smoked pimentón, and sea salt 25 minutes ahead.',
+                    'Stabilise Kamado Joe at 205°C two-zone direct; sear tail over glowing embers 4 minutes per side for light char.',
+                    'Slide to indirect zone alongside a cast-iron skillet foaming with butter, rosemary sprigs, and capers, spooning brown butter over the fish until core hits 55°C.',
+                    'Rest 5 minutes before carving thick medallions off the bone with charred lemon and chopped garden chives.'
+                ]
+            }
+        };
+
+        const TRAILS = {
+            shining: {
+                title:'Shining Tor & Errwood Hall Loop (Goyt Valley)',
+                stats:'8.8 km • 357m ascent • ~3h 00m',
+                os:'OS Grid: SK 013 757',
+                desc:'Climb from Errwood Reservoir past the mossy Victorian sandstone ruins and azalea terraces of Errwood Hall onto the gritstone flagstone ridge to Shining Tor (559m) with clear views across the Cheshire Plain to Jodrell Bank.',
+                finley:'Zero stiles. Short lead required across upland sheep pasture approaching Cats Tor; peaty splashes in Shooters Clough.',
+                pub:'The Old Hall Inn, Whitehough (Chinley) — open flagstones, roaring hearth, cask bitters, very dog-friendly.',
+                skyAz:'SE → S • 20:30–23:30 GMT',
+                skyTitle:'Jupiter Approaching Opposition & Orion Nebula (M42)',
+                skyDesc:'High eastern-southern aspect clears Cheadle skyglow: brilliant Jupiter dominates Gemini/Cancer for steady binocular moons with Iona, while Orion’s sword rises cleanly showing the fuzzy core of M42.'
+            },
+            kinder: {
+                title:'Kinder Reservoir & William Clough Circular',
+                stats:'13.0 km • 596m ascent • ~4h 15m',
+                os:'OS Grid: SK 048 869',
+                desc:'Follow the quiet waterside track from Bowden Bridge above Kinder Reservoir before ascending the dramatic rocky cleft of William Clough onto the Dark Peak gritstone edge toward Kinder Low (633m).',
+                finley:'Stream crossings in William Clough ideal for paws; keep Finley clipped on lead along Kinder plateau peat hags and moorland livestock.',
+                pub:'The Sportsman, Kinder Road (Hayfield) — 200m from Bowden Bridge car park, proper fireside walkers’ inn welcoming muddy Labradors.',
+                skyAz:'ESE → Zenith • Post-19:30 GMT',
+                skyTitle:'Pleiades (M45), Winter Milky Way & Jupiter Moons',
+                skyDesc:'Bortle-4 shelter around Hayfield edge reveals seven-plus stars in the Pleiades naked-eye and splits Io, Europa, Ganymede, and Callisto cleanly in 10x50 binoculars.'
+            }
+        };
+
+        /* ==========================================================================
+           2. STATE INITIALISATION & 39-WEEK GENERATOR
+           ========================================================================== */
+        const state = {
+            theme:'dusk', deck:'flight', winStart:0, expandAll:false,
+            strataFilter:'all', tapMode:'inspect', alMode:'app',
+            oncalls:{}, leaves:{}, heldIds:{}, dismissedIds:{}, sortedFam:{},
+            cloudUrl: DEFAULT_BACKEND_URL, passcode:'', cloudStatus:'auth_needed',
+            cloudRecon:[], cloudFamIds:{}, watchlistCount:0, lastSync:'',
+            reconCat:'all', fireKey:'venison', trailKey:'shining', guests:4,
+            aiFire:null, aiTrail:null,
+            commsOpen:false, ttsOn:true, modalIso:null, resetArmed:false,
+            chat:[{ role:'skaffen', text:"Skaffen-Amtiskaw online. Happy 12th Anniversary to you and Rachel. Tomorrow begins five straight CTCCU shifts, with Iona turning nine on Wednesday. Open Cloud Link to authenticate Skaffen_Command_DB and direct Charon Live voice." }]
+        };
+
+        function loadState() {
+            const raw = safeGet(STORAGE_KEY) || safeGet('skaffen_v2_pass2_state');
+            if (raw) {
+                try {
+                    const p = JSON.parse(raw);
+                    state.theme = p.theme || 'dusk';
+                    state.oncalls = p.oncalls || { ...DEFAULT_ONCALLS };
+                    state.leaves = p.leaves || buildDefaultLeaves();
+                    state.heldIds = p.heldIds || {};
+                    state.dismissedIds = p.dismissedIds || {};
+                    state.sortedFam = p.sortedFam || {};
+                    state.guests = p.guests || 4;
+                    state.cloudUrl = p.cloudUrl || DEFAULT_BACKEND_URL;
+                    state.passcode = p.passcode || '';
+                    state.cloudRecon = p.cloudRecon || [];
+                    state.cloudStatus = state.cloudUrl ? (state.passcode ? 'syncing' : 'auth_needed') : 'local';
+                    return;
+                } catch(e) {}
+            }
+            state.oncalls = { ...DEFAULT_ONCALLS };
+            state.leaves = buildDefaultLeaves();
+        }
+        function saveState() {
+            safeSet(STORAGE_KEY, JSON.stringify({
+                theme:state.theme, oncalls:state.oncalls, leaves:state.leaves,
+                heldIds:state.heldIds, dismissedIds:state.dismissedIds, sortedFam:state.sortedFam,
+                guests:state.guests, cloudUrl:state.cloudUrl, passcode:state.passcode, cloudRecon:state.cloudRecon
+            }));
+        }
+
+        function getCombinedReconList() {
+            const seen = new Set(), merged = [];
+            [...VERIFIED_RECON, ...state.cloudRecon].forEach(r => {
+                if (!r || !r.id || seen.has(r.id) || state.dismissedIds[r.id]) return;
+                seen.add(r.id);
+                merged.push(r);
+            });
+            return merged.sort((a, b) => String(a.iso || '9999').localeCompare(String(b.iso || '9999')));
+        }
+
+        /* ==========================================================================
+           2B. CORS-SAFE GOOGLE APPS SCRIPT CLOUD SYNC ENGINE
+           ========================================================================== */
+        function setCloudStatus(mode, detail) {
+            state.cloudStatus = mode;
+            const dot = document.getElementById('cloud-status-dot');
+            const pill = document.getElementById('cloud-status-pill');
+            const diag = document.getElementById('cloud-diag-line');
+            const cfg = {
+                linked:      { label:'CLOUD: LINKED', color:'var(--pine)' },
+                syncing:     { label:'SYNCING...',    color:'var(--sky)' },
+                auth_needed: { label:'AUTH NEEDED',   color:'var(--ochre)' },
+                local:       { label:'LOCAL',         color:'var(--text-muted)' }
+            }[mode] || { label:'AUTH NEEDED', color:'var(--ochre)' };
+            if (dot) { dot.style.background = cfg.color; dot.style.boxShadow = `0 0 8px ${cfg.color}`; }
+            if (pill) pill.textContent = cfg.label;
+            if (diag && detail) diag.textContent = detail;
+        }
+
+        async function postCloud(action, payload = {}) {
+            if (!state.cloudUrl) throw new Error('Cloud endpoint unset.');
+            if (!state.passcode) { setCloudStatus('auth_needed', 'Passcode required for Skaffen_Command_DB.'); throw new Error('Passcode required.'); }
+            setCloudStatus('syncing');
+            const res = await fetch(state.cloudUrl, {
+                method: 'POST',
+                redirect: 'follow',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action, passcode: state.passcode, ...payload })
+            });
+            const json = await res.json();
+            if (!json.ok) {
+                if (/unauthori[sz]ed|passcode|auth/i.test(json.error || '')) setCloudStatus('auth_needed', 'Passcode rejected by Code.gs.');
+                else setCloudStatus('linked', 'Backend note: ' + (json.error || 'Request error'));
+                throw new Error(json.error || 'Backend request failed');
+            }
+            setCloudStatus('linked');
+            return json;
+        }
+
+        function applyCloudPayload(data) {
+            if (!data) return;
+            const ov = data.rotaOverrides;
+            if (ov) {
+                if (ov.oncalls && typeof ov.oncalls === 'object') {
+                    state.oncalls = { ...DEFAULT_ONCALLS, ...ov.oncalls };
+                    Object.keys(state.oncalls).forEach(k => { if (!state.oncalls[k] || state.oncalls[k] === 'Removed') delete state.oncalls[k]; });
+                }
+                if (ov.leaves && typeof ov.leaves === 'object') {
+                    const baseLv = buildDefaultLeaves();
+                    Object.entries(ov.leaves).forEach(([iso, lv]) => {
+                        if (!lv || lv.status === 'Removed' || !lv.type) delete baseLv[iso];
+                        else baseLv[iso] = { type: lv.type, status: lv.status || 'Draft', note: lv.note || '' };
+                    });
+                    state.leaves = baseLv;
+                }
+            }
+            if (Array.isArray(data.watchlist)) state.watchlistCount = data.watchlist.length;
+
+            if (Array.isArray(data.activeAlerts)) {
+                const incoming = [];
+                data.activeAlerts.forEach(a => {
+                    const id = String(a.alert_id || a.id || '');
+                    const catRaw = String(a.category || 'MUSIC').toUpperCase();
+                    const st = String(a.status || 'Active').toLowerCase();
+                    const evIso = String(a.event_date || a.iso || '').slice(0, 10);
+                    if (!id) return;
+                    if (st === 'dismissed') { state.dismissedIds[id] = true; return; }
+                    if (st === 'held') state.heldIds[id] = true;
+
+                    if (catRaw === 'FAMILY') {
+                        FAMILY_DATES.forEach(f => {
+                            if (String(a.title || '').toLowerCase().includes(f.name.split(' ')[0].toLowerCase())) {
+                                state.cloudFamIds[f.id] = id;
+                                state.sortedFam[f.id] = (st === 'sorted' || st === 'acknowledged');
+                            }
+                        });
+                        return;
+                    }
+                    const matchBase = VERIFIED_RECON.find(v => v.id === id || (v.iso === evIso && String(a.title || '').toLowerCase().includes(v.title.split('@')[0].trim().toLowerCase())));
+                    if (matchBase) {
+                        matchBase.cloudId = id;
+                        if (st === 'held') state.heldIds[matchBase.id] = true;
+                        else if (st === 'active') delete state.heldIds[matchBase.id];
+                    } else if (/^\d{4}-\d{2}-\d{2}$/.test(evIso)) {
+                        const mappedCat = /food|dining/i.test(catRaw) ? 'dining' : (/cultur|exhib|family/i.test(catRaw) ? 'culture' : 'music');
+                        incoming.push({
+                            id, cloudId: id, cat: mappedCat, iso: evIso,
+                            title: a.title || 'Scouted Manchester Listing',
+                            venue: `${a.venue || 'Greater Manchester'} • ${evIso}`,
+                            url: a.url || 'https://alberthallmanchester.com/whats-on/',
+                            note: a.summary || a.note || 'Surfaced by Skaffen grounded scout.'
+                        });
+                    }
+                });
+                state.cloudRecon = incoming;
+            }
+
+            const hd = data.hearthDispatch;
+            if (hd && typeof hd === 'object' && (hd.fire || hd.kamado_dish || hd.walk_title || hd.headline)) {
+                state.aiFire = hd.fire || {
+                    title: hd.kamado_dish || hd.headline || 'Weekend Kamado Live-Fire Dispatch',
+                    desc: hd.skaffen_verdict || hd.fire_notes || 'Synced from Skaffen_Command_DB Hearth Dispatch.',
+                    temps: hd.temps || '115°C Ceramic Indirect → 230°C Cast-Iron Sear',
+                    wood: hd.wood || 'Seasoned English Oak / Fruitwood',
+                    probe: hd.probe || 'Thermapen Internal Target Verified',
+                    ings: Array.isArray(hd.ings) && hd.ings.length ? hd.ings : [
+                        { n: hd.kamado_dish || 'Primary cut / whole fish', q: 230, u: 'g' },
+                        { n: 'Cultured butter, sea salt & garden rosemary', q: 20, u: 'g' }
+                    ],
+                    steps: Array.isArray(hd.steps) && hd.steps.length ? hd.steps : [
+                        hd.fire_notes || 'Stabilise Kamado Joe vents over clean blue lumpwood smoke and sear hard to finish.',
+                        hd.album_pairing ? `Spin while resting: ${hd.album_pairing}` : 'Rest sheltered 10 minutes before carving.'
+                    ]
+                };
+                state.aiTrail = hd.trail || {
+                    title: hd.walk_title || 'Peak District & Cheshire Contour Loop',
+                    stats: hd.walk_stats || 'Weekend Moorland & Clough Circuit',
+                    os: hd.os_grid_ref ? `OS Grid: ${hd.os_grid_ref}` : 'OS Explorer OL1 / OL24',
+                    desc: hd.headline || hd.walk_desc || 'Synced from Skaffen_Command_DB.',
+                    finley: hd.finley_notes || 'Check upland livestock leads; towel stowed in the iX3 boot.',
+                    pub: hd.pub || (hd.album_pairing ? `Hearth Pairing: ${hd.album_pairing}` : 'Dog-friendly flagstone hearth inn at trailhead.'),
+                    skyAz: hd.sky_az || 'Post-Dusk Clear Window',
+                    skyTitle: hd.sky_title || 'Dark-Sky Sightline with Iona',
+                    skyDesc: hd.astronomy_note || 'Scan Jupiter moons and Orion Nebula (M42) in 10x50 binoculars.'
+                };
+                state.fireKey = 'ai'; state.trailKey = 'ai';
+            }
+
+            state.lastSync = new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+            setCloudStatus('linked', `Linked to Skaffen_Command_DB • Synced ${state.lastSync}${state.watchlistCount ? ` (${state.watchlistCount} watchlist targets)` : ''}.`);
+            saveState();
+            refreshAll();
+        }
+
+        async function syncFromCloud(verbose = false) {
+            if (!state.cloudUrl) { setCloudStatus('local', 'Local offline mode active.'); return; }
+            if (!state.passcode) { setCloudStatus('auth_needed', 'Enter passcode in Cloud Link to sync Skaffen_Command_DB.'); return; }
+            try {
+                const res = await postCloud('sync_state');
+                applyCloudPayload(res.data);
+                if (verbose) showToast('Synced live state from Skaffen_Command_DB.');
+            } catch (e) {
+                if (verbose) showToast('Cloud sync failed: ' + e.message);
+            }
+        }
+
+        function openCloudModal() {
+            document.getElementById('inp-backend-url').value = state.cloudUrl || DEFAULT_BACKEND_URL;
+            document.getElementById('inp-passcode').value = state.passcode || '';
+            document.getElementById('cloud-modal').className = 'modal-backdrop';
+        }
+        function closeCloudModal() { document.getElementById('cloud-modal').className = 'modal-backdrop hidden'; }
+
+        async function saveCloudCredentials() {
+            state.cloudUrl = document.getElementById('inp-backend-url').value.trim() || DEFAULT_BACKEND_URL;
+            state.passcode = document.getElementById('inp-passcode').value.trim();
+            saveState();
+            await syncFromCloud(true);
+        }
+
+        function disconnectCloud() {
+            state.passcode = '';
+            document.getElementById('inp-passcode').value = '';
+            saveState();
+            setCloudStatus('auth_needed', 'Cleared device passcode. Re-enter anytime to link Skaffen_Command_DB.');
+            showToast('Passcode cleared — running locally.');
+        }
+
+        async function triggerRemoteScout(mode) {
+            try {
+                showToast(`Running grounded ${mode.toUpperCase()} scout on Code.gs...`);
+                const res = await postCloud('run_scout_now', { mode });
+                if (res.data) applyCloudPayload(res.data);
+                else await syncFromCloud(false);
+                if (mode === 'hearth') switchDeck('hearth'); else switchDeck('recon');
+                const addedMsg = typeof res.added === 'number' ? ` (${res.added} added)` : '';
+                showToast(`Completed ${mode.toUpperCase()} scout${addedMsg}.`);
+            } catch (e) {
+                showToast('Scout error: ' + e.message);
+            }
+        }
+
+        let cachedWeeks = [], dayLookup = {};
+        function buildSchedule() {
+            cachedWeeks = []; dayLookup = {};
+            const famByMD = {};
+            FAMILY_DATES.forEach(f => famByMD[f.m + '-' + f.d] = f);
+            const heldByIso = {};
+            getCombinedReconList().forEach(r => { if (state.heldIds[r.id]) heldByIso[r.iso] = r; });
+
+            const anchor = new Date(2026, 10, 9); // Mon 9 Nov 2026 = Wk 0 (JP Wk 1), so 16 Nov = JP Wk 2 CTCCU
+            let prevCC1 = false;
+            for (let w = 0; w < 39; w++) {
+                const jpWeek = (w % 8) + 1, cycle = Math.floor(w / 8) + 1;
+                const wStart = new Date(2026, 10, 9 + w * 7);
+                const days = [];
+                for (let d = 0; d < 7; d++) {
+                    const dt = new Date(wStart.getFullYear(), wStart.getMonth(), wStart.getDate() + d);
+                    const iso = toISO(dt);
+                    const base = JOB_PLAN[jpWeek][d];
+                    const oncall = state.oncalls[iso] || null;
+                    const leave = state.leaves[iso] || null;
+                    const protectAM = prevCC1 && base.pas > 0 && !leave;
+                    const dayObj = {
+                        iso, dt, dIdx:d, wIdx:w, jpWeek, cycle, base, oncall, leave,
+                        bh: BANK_HOLIDAYS[iso] || null,
+                        fam: famByMD[(dt.getMonth()+1) + '-' + dt.getDate()] || null,
+                        held: heldByIso[iso] || null,
+                        protectAM
+                    };
+                    days.push(dayObj);
+                    dayLookup[iso] = dayObj;
+                    prevCC1 = (oncall === 'CC1');
+                }
+                cachedWeeks.push({ wIdx:w, jpWeek, cycle, wStart, days });
+            }
+        }
+
+        /* ==========================================================================
+           3. PROCEDURAL 60FPS STUDY 02 DRONE CORE + WEB AUDIO REACTIVE ENGINE
+           ========================================================================== */
+        const coreAnim = {
+            yaw: 0.4, pitch: 0.25, velYaw: 0.0045, dragging: false, moved: false, lx: 0, ly: 0,
+            scanBoost: 0, auraRGB: [190, 18, 60], targetRGB: [190, 18, 60], audioAmp: 0, simSpeak: false
+        };
+
+        function initDroneCore() {
+            const cvs = document.getElementById('drone-core-canvas');
+            const ctx = cvs.getContext('2d');
+            const pointerDown = (x, y) => { coreAnim.dragging = true; coreAnim.moved = false; coreAnim.lx = x; coreAnim.ly = y; };
+            const pointerMove = (x, y) => {
+                if (!coreAnim.dragging) return;
+                const dx = x - coreAnim.lx, dy = y - coreAnim.ly;
+                if (Math.abs(dx) + Math.abs(dy) > 4) coreAnim.moved = true;
+                coreAnim.yaw += dx * 0.012;
+                coreAnim.pitch = Math.max(-1.1, Math.min(1.1, coreAnim.pitch + dy * 0.012));
+                coreAnim.lx = x; coreAnim.ly = y;
+            };
+            const pointerUp = () => {
+                if (coreAnim.dragging && !coreAnim.moved) {
+                    coreAnim.scanBoost = 1.0;
+                    jumpToToday();
+                }
+                coreAnim.dragging = false;
+            };
+
+            cvs.addEventListener('mousedown', e => pointerDown(e.clientX, e.clientY));
+            window.addEventListener('mousemove', e => pointerMove(e.clientX, e.clientY));
+            window.addEventListener('mouseup', pointerUp);
+            cvs.addEventListener('touchstart', e => { if (e.touches[0]) pointerDown(e.touches[0].clientX, e.touches[0].clientY); }, { passive:true });
+            cvs.addEventListener('touchmove', e => { if (e.touches[0]) pointerMove(e.touches[0].clientX, e.touches[0].clientY); }, { passive:true });
+            cvs.addEventListener('touchend', pointerUp);
+
+            function drawRing3D(cx, cy, radius, tiltX, tiltY, rotZ, isBackPass, amp, strokeCol) {
+                ctx.beginPath();
+                let penDown = false;
+                const steps = 72;
+                for (let i = 0; i <= steps; i++) {
+                    const a = (i / steps) * Math.PI * 2 + rotZ;
+                    const wave = 1 + amp * 0.09 * Math.sin(a * 6 + performance.now() * 0.012);
+                    let x = Math.cos(a) * radius * wave, y = Math.sin(a) * radius * wave, z = 0;
+                    // Rotate X then Y then user pitch/yaw
+                    let y1 = y * Math.cos(tiltX) - z * Math.sin(tiltX), z1 = y * Math.sin(tiltX) + z * Math.cos(tiltX);
+                    let x2 = x * Math.cos(tiltY) + z1 * Math.sin(tiltY), z2 = -x * Math.sin(tiltY) + z1 * Math.cos(tiltY);
+                    let x3 = x2 * Math.cos(coreAnim.yaw) + z2 * Math.sin(coreAnim.yaw);
+                    let z3 = -x2 * Math.sin(coreAnim.yaw) + z2 * Math.cos(coreAnim.yaw);
+                    let y3 = y1 * Math.cos(coreAnim.pitch) - z3 * Math.sin(coreAnim.pitch);
+                    let zFinal = y1 * Math.sin(coreAnim.pitch) + z3 * Math.cos(coreAnim.pitch);
+
+                    const inHalf = isBackPass ? (zFinal < 0) : (zFinal >= 0);
+                    if (inHalf) {
+                        const persp = 320 / (320 - zFinal * 0.45);
+                        const sx = cx + x3 * persp, sy = cy + y3 * persp;
+                        if (!penDown) { ctx.moveTo(sx, sy); penDown = true; } else ctx.lineTo(sx, sy);
+                    } else { penDown = false; }
+                }
+                ctx.strokeStyle = strokeCol;
+                ctx.lineWidth = isBackPass ? 1.15 : 1.75;
+                ctx.stroke();
+            }
+
+            function renderLoop(t) {
+                const dpr = window.devicePixelRatio || 1;
+                const w = cvs.clientWidth || 300, h = cvs.clientHeight || 300;
+                if (cvs.width !== Math.round(w * dpr) || cvs.height !== Math.round(h * dpr)) {
+                    cvs.width = Math.round(w * dpr); cvs.height = Math.round(h * dpr);
+                }
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                ctx.clearRect(0, 0, w, h);
+
+                // Update audio reactivity (live AnalyserNode or simulated speech cadence)
+                let targetAmp = 0;
+                if (audioState.analyser && (audioState.listening || audioState.liveActive || audioState.activeSources.size > 0)) {
+                    audioState.analyser.getByteFrequencyData(audioState.freqBuf);
+                    let sum = 0;
+                    for (let i = 0; i < 32; i++) sum += audioState.freqBuf[i];
+                    targetAmp = Math.min(1, (sum / (32 * 255)) * 2.6);
+                    document.getElementById('voice-freq-badge').textContent = (audioState.liveActive ? 'CHARON LIVE FFT: ' : 'MIC FFT: ') + Math.round(targetAmp * 100) + '%';
+                } else if (coreAnim.simSpeak) {
+                    targetAmp = 0.28 + 0.38 * Math.abs(Math.sin(t * 0.009)) * Math.abs(Math.cos(t * 0.021));
+                    document.getElementById('voice-freq-badge').textContent = 'VOICE TX: ' + Math.round(targetAmp * 100) + '%';
+                }
+                coreAnim.audioAmp += (targetAmp - coreAnim.audioAmp) * 0.22;
+                coreAnim.scanBoost *= 0.94;
+                if (!coreAnim.dragging) coreAnim.yaw += coreAnim.velYaw + coreAnim.scanBoost * 0.06;
+
+                for (let k = 0; k < 3; k++) coreAnim.auraRGB[k] += (coreAnim.targetRGB[k] - coreAnim.auraRGB[k]) * 0.06;
+                const [r, g, b] = coreAnim.auraRGB.map(Math.round);
+
+                const cx = w / 2, cy = h / 2, baseR = w * 0.28;
+                const amp = coreAnim.audioAmp + coreAnim.scanBoost * 0.5;
+
+                // 1. Multi-spectral breathing plasma aura halo
+                for (let p = 0; p < 3; p++) {
+                    const ang = t * (0.0008 + p * 0.0003) * (p % 2 ? -1 : 1);
+                    const ox = cx + Math.cos(ang) * (5 + amp * 12);
+                    const oy = cy + Math.sin(ang) * (5 + amp * 12);
+                    const rad = baseR * (1.36 + 0.08 * Math.sin(t * 0.002 + p) + amp * 0.28);
+                    const grad = ctx.createRadialGradient(ox, oy, baseR * 0.42, cx, cy, rad);
+                    grad.addColorStop(0, `rgba(${r},${g},${b},${0.36 + amp * 0.3})`);
+                    grad.addColorStop(0.55, `rgba(200,162,106,${0.16 + amp * 0.14})`);
+                    grad.addColorStop(1, 'rgba(0,0,0,0)');
+                    ctx.fillStyle = grad;
+                    ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.fill();
+                }
+
+                const cageR = baseR * 0.92;
+                const cages = [
+                    { tx: 0.35 + t * 0.0004, ty: 0.2, rz: t * 0.0006 },
+                    { tx: 1.22 - t * 0.0003, ty: 0.85, rz: -t * 0.0005 },
+                    { tx: -0.65, ty: 1.45 + t * 0.00035, rz: t * 0.0004 },
+                    { tx: 0.05, ty: 0.05, rz: -t * 0.0007 }
+                ];
+
+                // 2. Back Z-pass of bronze wire cage
+                cages.forEach(c => drawRing3D(cx, cy, cageR, c.tx, c.ty, c.rz, true, amp, 'rgba(134,102,57,0.52)'));
+
+                // 3. Central Machined Dark Graphite Sphere
+                const sphR = baseR * (0.58 + amp * 0.04);
+                const sphGrad = ctx.createRadialGradient(cx - sphR * 0.32, cy - sphR * 0.34, sphR * 0.08, cx, cy, sphR);
+                sphGrad.addColorStop(0, '#3d4859');
+                sphGrad.addColorStop(0.45, '#19212e');
+                sphGrad.addColorStop(0.88, '#090d14');
+                sphGrad.addColorStop(1, `rgba(${r},${g},${b},0.55)`);
+                ctx.fillStyle = sphGrad;
+                ctx.beginPath(); ctx.arc(cx, cy, sphR, 0, Math.PI * 2); ctx.fill();
+
+                // Subtle equatorial machined seam on sphere
+                ctx.strokeStyle = 'rgba(200,162,106,0.28)';
+                ctx.lineWidth = 0.9;
+                ctx.beginPath(); ctx.ellipse(cx, cy, sphR * 0.96, sphR * 0.26, coreAnim.pitch * 0.4, 0, Math.PI * 2); ctx.stroke();
+
+                // 4. Front Z-pass of counter-rotating brushed bronze wire cage
+                cages.forEach(c => drawRing3D(cx, cy, cageR, c.tx, c.ty, c.rz, false, amp, 'rgba(208,172,116,0.92)'));
+
+                requestAnimationFrame(renderLoop);
+            }
+            requestAnimationFrame(renderLoop);
+        }
+
+        function render8WeekBezel() {
+            const g = document.getElementById('svg-8wk-bezel');
+            const activeJp = cachedWeeks[state.winStart] ? cachedWeeks[state.winStart].jpWeek : 1;
+            const labels = ['W1 MGMT','W2 CTCCU','W3 MGMT','W4 MGMT','W5 CARD','W6 MGMT','W7 FLEX','W8 CARD'];
+            const cols = ['#64748b','#be123c','#64748b','#64748b','#d97706','#64748b','#0d9488','#d97706'];
+            let html = '';
+            for (let i = 0; i < 8; i++) {
+                const jp = i + 1, isAct = (jp === activeJp);
+                const a1 = (-90 + i * 45 + 3) * Math.PI / 180, a2 = (-90 + (i + 1) * 45 - 3) * Math.PI / 180;
+                const r = 144;
+                const x1 = 170 + r * Math.cos(a1), y1 = 170 + r * Math.sin(a1);
+                const x2 = 170 + r * Math.cos(a2), y2 = 170 + r * Math.sin(a2);
+                const am = (a1 + a2) / 2;
+                const tx = 170 + 144 * Math.cos(am), ty = 170 + 144 * Math.sin(am);
+                html += `<g class="cursor-pointer" onclick="jumpToJpWeek(${jp})">
+                    <path d="M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${r} ${r} 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)}"
+                          fill="none" stroke="${isAct ? '#c8a26a' : cols[i]}" stroke-width="${isAct ? 6 : 3.2}" stroke-opacity="${isAct ? 0.95 : 0.42}" stroke-linecap="round"/>
+                    <title>Jump to Job Plan ${labels[i]}</title>
+                </g>`;
+                if (isAct) {
+                    html += `<circle cx="${tx.toFixed(1)}" cy="${ty.toFixed(1)}" r="3.2" fill="#fffdf9"/>`;
+                }
+            }
+            g.innerHTML = html;
+        }
+
+        function jumpToJpWeek(jp) {
+            const cur = state.winStart;
+            const found = cachedWeeks.find(w => w.wIdx >= cur && w.jpWeek === jp) || cachedWeeks.find(w => w.jpWeek === jp);
+            if (found) { state.winStart = Math.min(37, found.wIdx); refreshAll(); }
+        }
+
+        /* ==========================================================================
+           4. TELEMETRY GAUGES, STRATA RIBBON & 14-DAY FLIGHT STRIP RENDERING
+           ========================================================================== */
+        function updateTelemetryAndAura() {
+            let schedCT = 0, alCT = 0, draftAlCT = 0, appAl = 0, jpAlDays = 0, jpAlSess = 0, slUsed = 0, slJp = 0;
+            let cc1 = 0, cc2 = 0, wkndOc = 0, protectCnt = 0;
+
+            cachedWeeks.forEach(w => w.days.forEach(d => {
+                if (d.base.clinical) {
+                    schedCT++;
+                    if (d.leave && d.leave.type === 'AL') {
+                        if (d.leave.status === 'Approved') alCT++; else draftAlCT++;
+                    }
+                }
+                if (d.leave) {
+                    if (d.leave.type === 'AL') {
+                        appAl++;
+                        if (d.base.sess > 0) { jpAlDays++; jpAlSess += d.base.sess; }
+                    } else if (d.leave.type === 'SL') {
+                        slUsed++;
+                        if (d.base.sess > 0) slJp++;
+                    }
+                }
+                if (d.oncall === 'CC1') cc1++;
+                if (d.oncall === 'CC2') cc2++;
+                if (d.oncall && d.dIdx >= 5) wkndOc++;
+                if (d.protectAM) protectCnt++;
+            }));
+
+            const totAlCT = alCT + draftAlCT, netCT = schedCT - totAlCT;
+            document.getElementById('val-ct-net').textContent = netCT.toFixed(1);
+            document.getElementById('val-ct-sched').textContent = '/ ' + schedCT.toFixed(1) + ' sched';
+            document.getElementById('val-ct-al').textContent = totAlCT.toFixed(1) + ' CT d on AL';
+            document.getElementById('arc-ct').setAttribute('stroke-dashoffset', (119.38 * (1 - Math.min(1, netCT / 42))).toFixed(1));
+
+            if (state.alMode === 'app') {
+                document.getElementById('val-al-main').textContent = appAl;
+                document.getElementById('val-al-sub').textContent = '/ 34 App d';
+                document.getElementById('val-al-alt').textContent = `${jpAlDays} JP d • ${jpAlSess}/47 sess`;
+            } else {
+                document.getElementById('val-al-main').textContent = jpAlDays + 'd';
+                document.getElementById('val-al-sub').textContent = `(${jpAlSess}/47 sess)`;
+                document.getElementById('val-al-alt').textContent = `App Calendar: ${appAl}/34d`;
+            }
+            document.getElementById('val-al-rem').textContent = `${34 - appAl} App d left`;
+            document.getElementById('val-al-sess-rem').textContent = `${47 - jpAlSess} sess left`;
+            document.getElementById('arc-al').setAttribute('stroke-dashoffset', (119.38 * (1 - Math.min(1, appAl / 34))).toFixed(1));
+
+            document.getElementById('val-sl-used').textContent = slUsed;
+            document.getElementById('val-sl-rem').textContent = `${Math.max(0, 10 - slUsed)}d available`;
+            document.getElementById('val-sl-jp').textContent = `${slJp} JP d displaced`;
+            document.getElementById('arc-sl').setAttribute('stroke-dashoffset', (119.38 * (1 - Math.min(1, slUsed / 10))).toFixed(1));
+
+            document.getElementById('val-oc-total').textContent = cc1 + cc2;
+            document.getElementById('val-oc-split').textContent = `${cc1} CC1 • ${cc2} CC2`;
+            document.getElementById('val-oc-wknd').textContent = `${wkndOc} Wknd + NYD BH`;
+            document.getElementById('val-protect-badge').textContent = `${protectCnt} Protect AMs`;
+
+            // Update Aura Colour & Deadpan Readout from active 14-day window
+            const wA = cachedWeeks[state.winStart], wB = cachedWeeks[Math.min(38, state.winStart + 1)];
+            const winDays = [...wA.days, ...(wB ? wB.days : [])];
+            const hasCTCCU = winDays.some(d => d.base.type === 'CTCCU' && !d.leave);
+            const winCC1 = winDays.filter(d => d.oncall === 'CC1').length;
+            const winAL = winDays.filter(d => d.leave && d.leave.type === 'AL').length;
+
+            const pip = document.getElementById('header-aura-pip');
+            if (hasCTCCU || winCC1 >= 2) {
+                coreAnim.targetRGB = [190, 18, 60];
+                pip.style.background = 'var(--oxblood)'; pip.style.boxShadow = '0 0 10px var(--oxblood)';
+            } else if (winAL >= 3) {
+                coreAnim.targetRGB = [5, 150, 105];
+                pip.style.background = 'var(--pine)'; pip.style.boxShadow = '0 0 10px var(--pine)';
+            } else {
+                coreAnim.targetRGB = [200, 162, 106];
+                pip.style.background = 'var(--bronze-bright)'; pip.style.boxShadow = '0 0 10px var(--bronze-bright)';
+            }
+
+            document.getElementById('core-status-pill').textContent =
+                `C${wA.cycle} • JP WK ${wA.jpWeek} → WK ${wB ? wB.jpWeek : wA.jpWeek}`;
+
+            let line = `Viewing w/c ${wA.wStart.getDate()} ${MONTHS[wA.wStart.getMonth()]}: `;
+            if (state.winStart === 0) {
+                line = `12th Anniversary logged today. Five consecutive CTCCU shifts begin 08:00 tomorrow; Iona turns nine mid-block on Wednesday.`;
+            } else if (hasCTCCU) {
+                line += `Heavy CTCCU clinical block in frame. Keep evening commitments lean.`;
+            } else if (winCC1 >= 2) {
+                line += `${winCC1} first on-calls (CC1) compressed into this fortnight—Post-CC1 morning shields active.`;
+            } else if (winAL >= 3) {
+                line += `${winAL} leave days active across this window. Guard the perimeter.`;
+            } else {
+                line += `Clean operational rhythm—Wednesday through Sunday evenings largely unencumbered.`;
+            }
+            document.getElementById('skaffen-readout').textContent = line;
+        }
+
+        function renderStrataAndFlight() {
+            const track = document.getElementById('strata-track');
+            let sHtml = '';
+            cachedWeeks.forEach(w => {
+                const inWin = !state.expandAll && (w.wIdx === state.winStart || w.wIdx === state.winStart + 1);
+                const hasPinch = w.days.some(d => d.oncall || d.protectAM);
+                const hasOpt = (w.jpWeek === 7) || w.days.some(d => d.leave);
+                const hasStar = w.days.some(d => d.fam || d.held);
+                let dim = false;
+                if (state.strataFilter === 'pinch' && !hasPinch && w.jpWeek !== 2) dim = true;
+                if (state.strataFilter === 'optimiser' && !hasOpt) dim = true;
+                if (state.strataFilter === 'held' && !hasStar) dim = true;
+
+                let barCol = 'rgba(100,116,139,0.35)', barH = '34%';
+                if (w.days.some(d => d.leave && d.leave.type === 'AL')) { barCol = 'var(--pine)'; barH = '75%'; }
+                else if (w.jpWeek === 2) { barCol = 'var(--oxblood)'; barH = '92%'; }
+                else if (w.jpWeek === 5 || w.jpWeek === 8) { barCol = 'var(--ochre)'; barH = '58%'; }
+                else if (w.jpWeek === 7) { barCol = 'var(--teal)'; barH = '52%'; }
+
+                const ocDots = w.days.filter(d => d.oncall).map(d =>
+                    `<span class="w-1.5 h-1.5 rounded-full" style="background:${d.oncall==='CC1'?'#fda4af':'#38bdf8'};"></span>`
+                ).join('');
+                const starMark = hasStar ? `<span class="text-[9px] leading-none" style="color:var(--bronze-bright);">★</span>` : `<span class="text-[8px] font-telemetry opacity-40">${w.jpWeek}</span>`;
+
+                sHtml += `<div class="strata-col ${inWin ? 'in-window' : ''} ${dim ? 'dimmed' : ''}"
+                               onclick="selectStrataWeek(${w.wIdx})"
+                               title="w/c ${w.wStart.getDate()} ${MONTHS[w.wStart.getMonth()]} (JP Wk ${w.jpWeek})">
+                    <div class="flex items-center justify-center gap-0.5 h-3">${starMark}</div>
+                    <div class="w-full flex-1 flex items-end justify-center px-0.5">
+                        <div class="w-full rounded-sm" style="height:${barH};background:${barCol};"></div>
+                    </div>
+                    <div class="flex items-center justify-center gap-0.5 h-2.5">${ocDots}</div>
+                </div>`;
+            });
+            track.innerHTML = sHtml;
+
+            // Render 14-Day Flight Strip (or all 39 weeks if expanded)
+            const weeksToShow = state.expandAll ? cachedWeeks : [cachedWeeks[state.winStart], cachedWeeks[Math.min(38, state.winStart + 1)]].filter(Boolean);
+            const container = document.getElementById('flight-weeks-container');
+            container.innerHTML = weeksToShow.map(w => {
+                const wkPA = w.days.reduce((acc, d) => acc + (d.leave ? 0 : d.base.pas), 0);
+                const dayCards = w.days.map(d => {
+                    let tone = 'tone-off', badge = 'Off', badgeStyle = 'color:var(--text-muted);';
+                    if (d.leave) {
+                        tone = d.leave.type === 'AL' ? 'tone-al' : 'tone-sl';
+                        badge = (d.leave.status === 'Draft' ? 'Draft ' : '') + d.leave.type;
+                        badgeStyle = `background:${d.leave.type==='AL'?'var(--pine)':'var(--violet)'};color:#fff;`;
+                    } else if (d.base.type === 'CTCCU') { tone='tone-ctccu'; badge='CTCCU'; badgeStyle='background:var(--oxblood);color:#fff;'; }
+                    else if (d.base.type === 'CARDIAC') { tone='tone-cardiac'; badge='Theatre'; badgeStyle='background:var(--ochre);color:#111;'; }
+                    else if (d.base.type === 'FLEX') { tone='tone-flex'; badge='Flex'; badgeStyle='background:var(--teal);color:#fff;'; }
+                    else if (d.base.type === 'MGMT') { tone='tone-mgmt'; badge='Mgmt'; badgeStyle='background:rgba(148,163,184,0.22);color:var(--text-primary);'; }
+                    else if (d.base.type === 'WKND') { tone='tone-wknd'; badge='Wknd'; }
+
+                    const tags = [];
+                    if (d.iso === TODAY_ISO) tags.push(`<span class="block text-center text-[9px] font-telemetry font-bold px-1 rounded" style="background:var(--bronze-bright);color:#111;">TODAY</span>`);
+                    if (d.fam) tags.push(`<span class="block truncate text-center text-[9.5px] font-semibold px-1 py-0.5 rounded" style="background:rgba(200,162,106,0.22);color:var(--bronze-bright);">★ ${esc(d.fam.short)}</span>`);
+                    if (d.held) tags.push(`<span class="block truncate text-center text-[9.5px] font-semibold px-1 py-0.5 rounded border bronze-hairline" style="background:rgba(200,162,106,0.16);color:var(--bronze-bright);">🎟 ${esc(d.held.title.split('@')[0])}</span>`);
+                    if (d.protectAM) tags.push(`<span class="block text-center text-[9px] font-telemetry font-bold px-1 py-0.5 rounded" style="background:var(--ochre-soft);color:var(--ochre-text);">🛡 Protect AM</span>`);
+                    if (d.oncall) tags.push(`<span class="block text-center text-[9.5px] font-telemetry font-bold px-1 py-0.5 rounded" style="background:${d.oncall==='CC1'?'#05080f':'var(--sky)'};color:#fff;border:1px solid rgba(255,255,255,0.2);">${d.oncall} On-Call</span>`);
+                    if (d.bh) tags.push(`<span class="block truncate text-center text-[9px] opacity-80">${esc(d.bh)}</span>`);
+
+                    return `<div class="flight-card ${tone} ${d.iso===TODAY_ISO?'today-ring':''}" onclick="onFlightCardTap('${d.iso}')">
+                        <div class="flex items-center justify-between font-telemetry text-[10.5px]">
+                            <span class="uppercase opacity-75">${DAY_SHORT[d.dIdx]}</span>
+                            <span class="font-bold">${d.dt.getDate()} ${MONTHS[d.dt.getMonth()]}</span>
+                        </div>
+                        <div class="my-1.5 text-center">
+                            <span class="inline-block w-full py-1 px-1.5 rounded text-[11px] font-telemetry font-bold" style="${badgeStyle}">${badge}</span>
+                            ${d.leave && d.base.pas > 0 ? `<span class="block text-[9px] line-through opacity-60 mt-0.5">${d.base.short}</span>` : ''}
+                        </div>
+                        <div class="space-y-1">${tags.join('')}</div>
+                    </div>`;
+                }).join('');
+
+                let wkNote = '';
+                if (w.jpWeek === 7 && !w.days.some(d => d.leave || d.oncall)) {
+                    wkNote = `<span class="font-telemetry text-[10.5px] px-2 py-0.5 rounded" style="background:var(--pine-soft);color:var(--pine-text);">✦ Sweet Spot: Book Mon/Tue Mgmt + Wed Flex (1 CT d) = 9 days off</span>`;
+                } else if (w.jpWeek === 2) {
+                    wkNote = `<span class="font-telemetry text-[10.5px] px-2 py-0.5 rounded" style="background:var(--oxblood-soft);color:var(--oxblood-text);">CTCCU Intensive Block</span>`;
+                }
+
+                return `<div class="machined-panel p-3.5 space-y-2.5">
+                    <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b bronze-hairline">
+                        <div class="flex items-center gap-2">
+                            <span class="font-editorial text-lg font-bold">w/c ${w.wStart.getDate()} ${MONTHS[w.wStart.getMonth()]} ${w.wStart.getFullYear()}</span>
+                            <span class="font-telemetry text-[10.5px] px-2 py-0.5 rounded border bronze-hairline" style="color:var(--bronze-bright);">Cycle ${w.cycle} • JP Wk ${w.jpWeek}</span>
+                            ${wkNote}
+                        </div>
+                        <span class="font-telemetry text-xs" style="color:var(--text-secondary);">${wkPA.toFixed(1)} PA active</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">${dayCards}</div>
+                </div>`;
+            }).join('');
+        }
+
+        /* ==========================================================================
+           5. PASS 2: STAGED FAMILY MILESTONE RADAR & VERIFIED PERFORATED RECON SLIPS
+           ========================================================================== */
+        function computeFamilyList() {
+            const ref = parseISO(TODAY_ISO);
+            return FAMILY_DATES.map(f => {
+                let yr = 2026;
+                let dt = new Date(yr, f.m - 1, f.d);
+                if (dt < ref) { yr = 2027; dt = new Date(yr, f.m - 1, f.d); }
+                const iso = toISO(dt);
+                const diffDays = Math.round((dt - ref) / 86400000);
+                const rotaDay = dayLookup[iso] || null;
+                let stage = 'HORIZON', stageStyle = 'color:var(--text-muted);border-color:var(--border-subtle);';
+                if (diffDays === 0) { stage = 'TODAY • ANNIVERSARY'; stageStyle = 'background:var(--bronze-bright);color:#111;font-weight:700;'; }
+                else if (diffDays <= 5) { stage = `5-DAY CARD ALERT (${diffDays}d)`; stageStyle = 'background:var(--oxblood-soft);color:var(--oxblood-text);border-color:var(--oxblood-border);'; }
+                else if (diffDays <= 21) { stage = `21-DAY GIFT/TABLE (${diffDays}d)`; stageStyle = 'background:var(--ochre-soft);color:var(--ochre-text);border-color:var(--ochre-border);'; }
+                else if (diffDays <= 35) { stage = `ON DECK (${diffDays}d)`; stageStyle = 'background:var(--pine-soft);color:var(--pine-text);border-color:var(--pine-border);'; }
+
+                let rotaCtx = 'Outside 39w window';
+                if (rotaDay) {
+                    const parts = [rotaDay.leave ? `${rotaDay.leave.type} Leave` : rotaDay.base.label];
+                    if (rotaDay.oncall) parts.push(`${rotaDay.oncall} Clash`);
+                    if (rotaDay.protectAM) parts.push('Protect AM');
+                    rotaCtx = parts.join(' • ');
+                }
+                return { ...f, iso, dt, diffDays, stage, stageStyle, rotaDay, rotaCtx, sorted: !!state.sortedFam[f.id] };
+            }).sort((a, b) => a.diffDays - b.diffDays);
+        }
+
+        function renderFamilyRadar() {
+            const list = computeFamilyList();
+            // Top 3 Urgent Strip in Deck 01
+            const urgent = list.slice(0, 3);
+            document.getElementById('top-family-strip').innerHTML = urgent.map(f => `
+                <div class="machined-panel px-3.5 py-2.5 flex items-center justify-between gap-2 ${f.sorted ? 'opacity-55' : ''}">
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-telemetry text-[9.5px] px-1.5 py-0.5 rounded border" style="${f.stageStyle}">${f.stage}</span>
+                            <span class="font-telemetry text-[10px]" style="color:var(--text-muted);">${f.dt.getDate()} ${MONTHS[f.dt.getMonth()]}</span>
+                        </div>
+                        <div class="font-semibold text-xs truncate mt-1">${esc(f.name)}</div>
+                        <div class="font-telemetry text-[10px] truncate" style="color:var(--text-secondary);">Rota: ${esc(f.rotaCtx)}</div>
+                    </div>
+                    <button type="button" onclick="toggleFamilySorted('${f.id}')" class="btn-instrument py-1 px-2 text-[10.5px] flex-shrink-0">
+                        ${f.sorted ? '✓ Sorted' : 'Acknowledge'}
+                    </button>
+                </div>
+            `).join('');
+
+            // Full 12-Date Radar in Deck 02
+            document.getElementById('family-milestone-list').innerHTML = list.map(f => `
+                <div class="machined-inset p-3 flex items-center justify-between gap-2.5 border bronze-hairline ${f.sorted ? 'opacity-55' : ''}">
+                    <div class="min-w-0 flex-1 cursor-pointer" onclick="jumpToIso('${f.iso}')" title="Jump Flight Strip to this date">
+                        <div class="flex flex-wrap items-center gap-1.5">
+                            <span class="font-telemetry text-[9.5px] px-1.5 py-0.5 rounded border" style="${f.stageStyle}">${f.stage}</span>
+                            <span class="font-telemetry text-[10.5px]" style="color:var(--bronze-bright);">${DAY_SHORT[(f.dt.getDay()+6)%7]} ${f.dt.getDate()} ${MONTHS[f.dt.getMonth()]} ${f.dt.getFullYear()}</span>
+                        </div>
+                        <div class="font-semibold text-xs sm:text-sm mt-1">${esc(f.name)}</div>
+                        <div class="font-telemetry text-[10.5px] mt-0.5" style="color:var(--text-secondary);">Rota Context: ${esc(f.rotaCtx)}</div>
+                    </div>
+                    <button type="button" onclick="toggleFamilySorted('${f.id}')" class="btn-instrument py-1.5 px-2.5 text-[11px] flex-shrink-0">
+                        ${f.sorted ? '✓ Sorted' : 'Sort'}
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function toggleFamilySorted(id) {
+            state.sortedFam[id] = !state.sortedFam[id];
+            saveState(); renderFamilyRadar();
+            const alertId = state.cloudFamIds[id] || ('fam-' + id);
+            if (state.passcode && state.cloudUrl) {
+                postCloud('update_alert', { alertId, status: state.sortedFam[id] ? 'Sorted' : 'Active' }).catch(() => {});
+            }
+            showToast(state.sortedFam[id] ? 'Milestone marked sorted.' : 'Milestone prompt restored.');
+        }
+
+        /* Live 3-Day Clearance Evaluator for Recon Slips */
+        function describeSlot(iso, role) {
+            const d = dayLookup[iso];
+            if (!d) return { label:'Unmapped', friction:0, pillStyle:'color:var(--text-muted);' };
+            const dateTag = `${DAY_SHORT[d.dIdx]} ${d.dt.getDate()}`;
+            if (d.oncall) {
+                return { label:`${dateTag}: ${d.oncall}`, friction: role === 'prior' ? 1 : 2, pillStyle:'background:var(--oxblood-soft);color:var(--oxblood-text);border-color:var(--oxblood-border);' };
+            }
+            if (d.leave) {
+                return { label:`${dateTag}: ${d.leave.type} Leave`, friction:0, pillStyle:'background:var(--pine-soft);color:var(--pine-text);border-color:var(--pine-border);' };
+            }
+            if (d.base.clinical) {
+                const sev = (role === 'prior') ? 1 : 2;
+                return { label:`${dateTag}: ${d.base.short}`, friction:sev, pillStyle: sev===2 ? 'background:var(--oxblood-soft);color:var(--oxblood-text);border-color:var(--oxblood-border);' : 'background:var(--ochre-soft);color:var(--ochre-text);border-color:var(--ochre-border);' };
+            }
+            if (d.base.type === 'MGMT') {
+                return { label:`${dateTag}: Mgmt${d.protectAM?' (Prot)':''}`, friction: role === 'after' ? 1 : 0, pillStyle:'background:var(--mgmt-soft);color:var(--text-primary);border-color:var(--border-subtle);' };
+            }
+            return { label:`${dateTag}: ${d.base.short}`, friction:0, pillStyle:'background:var(--pine-soft);color:var(--pine-text);border-color:var(--pine-border);' };
+        }
+
+        function evaluateReconClearance(iso) {
+            const prior = describeSlot(shiftISO(iso, -1), 'prior');
+            const night = describeSlot(iso, 'night');
+            const after = describeSlot(shiftISO(iso, 1), 'after');
+            const maxF = Math.max(night.friction, after.friction);
+            let verdict = { code:'zero', badge:'✓ ZERO FRICTION', style:'background:var(--pine-soft);color:var(--pine-text);border-color:var(--pine-border);' };
+            if (maxF === 2) verdict = { code:'clash', badge:'✕ ROTA CLASH', style:'background:var(--oxblood-soft);color:var(--oxblood-text);border-color:var(--oxblood-border);' };
+            else if (maxF === 1 || prior.friction >= 1) verdict = { code:'amber', badge:'⚡ NEXT-DAY WATCH', style:'background:var(--ochre-soft);color:var(--ochre-text);border-color:var(--ochre-border);' };
+            return { prior, night, after, verdict };
+        }
+
+        function renderReconSlips() {
+            const allRecon = getCombinedReconList();
+            const rcAll = document.getElementById('rc-all');
+            if (rcAll) rcAll.textContent = `All (${allRecon.length})`;
+            const badgeCnt = document.getElementById('badge-recon-count');
+            if (badgeCnt) badgeCnt.textContent = allRecon.length;
+
+            const filtered = allRecon.filter(r => {
+                const c = evaluateReconClearance(r.iso);
+                if (state.reconCat === 'zero') return c.verdict.code === 'zero';
+                if (state.reconCat !== 'all') return r.cat === state.reconCat;
+                return true;
+            });
+
+            document.getElementById('recon-slips-list').innerHTML = filtered.map(r => {
+                const c = evaluateReconClearance(r.iso);
+                const isHeld = !!state.heldIds[r.id];
+                const catMap = { music:'Live Music', dining:'Open-Fire & Dining', culture:'Family / Culture' };
+                return `<article class="recon-slip p-4">
+                    <div class="flex flex-wrap items-start justify-between gap-2">
+                        <div>
+                            <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                                <span class="font-telemetry text-[10px] px-2 py-0.5 rounded border font-semibold" style="${c.verdict.style}">${c.verdict.badge}</span>
+                                <span class="font-telemetry text-[10px] uppercase px-2 py-0.5 rounded border bronze-hairline" style="color:var(--bronze-bright);">${catMap[r.cat]}</span>
+                                ${isHeld ? `<span class="font-telemetry text-[10px] px-2 py-0.5 rounded font-bold" style="background:var(--bronze-bright);color:#111;">★ HELD ON ROTA</span>` : ''}
+                            </div>
+                            <h3 class="font-editorial text-xl font-bold leading-snug">${esc(r.title)}</h3>
+                            <div class="font-telemetry text-[11px]" style="color:var(--text-secondary);">${esc(r.venue)}</div>
+                        </div>
+                        <a href="${esc(r.url)}" target="_blank" rel="noopener noreferrer" class="btn-instrument text-[11px]">Box Office ↗</a>
+                    </div>
+
+                    <!-- Live 3-Day Clearance Strip -->
+                    <div class="grid grid-cols-3 gap-1.5 mt-3 font-telemetry text-[10.5px]">
+                        <div class="px-2 py-1.5 rounded border text-center truncate" style="${c.prior.pillStyle}">
+                            <span class="block text-[8.5px] uppercase opacity-70">Day Prior</span>${esc(c.prior.label)}
+                        </div>
+                        <div class="px-2 py-1.5 rounded border text-center font-bold truncate" style="${c.night.pillStyle}">
+                            <span class="block text-[8.5px] uppercase opacity-70">Event Night</span>${esc(c.night.label)}
+                        </div>
+                        <div class="px-2 py-1.5 rounded border text-center truncate" style="${c.after.pillStyle}">
+                            <span class="block text-[8.5px] uppercase opacity-70">Morning After</span>${esc(c.after.label)}
+                        </div>
+                    </div>
+
+                    <div class="perforated-divider"></div>
+
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <p class="text-xs italic flex-1 min-w-[210px]" style="color:var(--text-secondary);">"${esc(r.note)}"</p>
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" onclick="jumpToIso('${r.iso}')" class="btn-instrument py-1.5 px-2.5 text-[11px]">Jump to Week</button>
+                            <button type="button" onclick="toggleHoldRecon('${r.id}')" class="btn-instrument ${isHeld ? '' : 'btn-bronze-solid'} py-1.5 px-3 text-[11px]">
+                                ${isHeld ? '★ Release Hold' : '★ Hold Date on Rota'}
+                            </button>
+                            <button type="button" onclick="dismissRecon('${r.id}')" class="btn-instrument py-1.5 px-2 text-[11px]" title="Dismiss Recon Card">&times;</button>
+                        </div>
+                    </div>
+                </article>`;
+            }).join('');
+        }
+
+        function setReconCat(cat) {
+            state.reconCat = cat;
+            ['all','music','dining','culture','zero'].forEach(k => {
+                const el = document.getElementById('rc-' + k);
+                if (el) el.className = 'chip-btn' + (k === cat ? ' active' : '');
+            });
+            renderReconSlips();
+        }
+
+        function toggleHoldRecon(id) {
+            const item = getCombinedReconList().find(x => x.id === id);
+            state.heldIds[id] = !state.heldIds[id];
+            saveState(); refreshAll();
+            if (state.passcode && state.cloudUrl) {
+                postCloud('update_alert', { alertId: (item && item.cloudId) || id, status: state.heldIds[id] ? 'Held' : 'Active' }).catch(() => {});
+            }
+            showToast(state.heldIds[id] && item ? `Pinned "${item.title.split('@')[0].trim()}" to 39-week rota.` : 'Removed hold from rota.');
+        }
+
+        function dismissRecon(id) {
+            const item = getCombinedReconList().find(x => x.id === id);
+            state.dismissedIds[id] = true;
+            delete state.heldIds[id];
+            saveState(); refreshAll();
+            if (state.passcode && state.cloudUrl) {
+                postCloud('update_alert', { alertId: (item && item.cloudId) || id, status: 'Dismissed' }).catch(() => {});
+            }
+            showToast('Recon slip dismissed.');
+        }
+
+        function jumpToIso(iso) {
+            const d = dayLookup[iso];
+            if (!d) { showToast('Date falls outside 39-week window (Nov 26–Aug 27).'); return; }
+            state.winStart = Math.min(37, d.wIdx);
+            state.expandAll = false;
+            switchDeck('flight');
+            refreshAll();
+            showToast(`Focused w/c ${cachedWeeks[d.wIdx].wStart.getDate()} ${MONTHS[cachedWeeks[d.wIdx].wStart.getMonth()]}.`);
+        }
+
+        /* ==========================================================================
+           6. PASS 2: DECK 03 HEARTH & PEAK DISPATCH + GEMINI BESPOKE REFRESH
+           ========================================================================== */
+        function renderHearthDeck() {
+            const cook = state.fireKey === 'ai' && state.aiFire ? state.aiFire : FIRE_COOKS[state.fireKey];
+            const trail = state.trailKey === 'ai' && state.aiTrail ? state.aiTrail : TRAILS[state.trailKey];
+
+            ['venison','monkfish','ai'].forEach(k => {
+                const b = document.getElementById('fc-' + k);
+                if (b) b.className = 'chip-btn' + (state.fireKey === k ? ' active' : '') + (k === 'ai' && !state.aiFire ? ' hidden' : '');
+            });
+            ['shining','kinder','ai'].forEach(k => {
+                const b = document.getElementById('tr-' + k);
+                if (b) b.className = 'chip-btn' + (state.trailKey === k ? ' active' : '') + (k === 'ai' && !state.aiTrail ? ' hidden' : '');
+            });
+
+            document.getElementById('guest-count-val').textContent = state.guests;
+            document.getElementById('ing-guest-label').textContent = state.guests;
+            document.getElementById('fire-title').textContent = cook.title;
+            document.getElementById('fire-desc').textContent = cook.desc;
+            document.getElementById('fire-temps').textContent = cook.temps;
+            document.getElementById('fire-wood').textContent = cook.wood;
+            document.getElementById('fire-probe').textContent = cook.probe;
+
+            document.getElementById('fire-ingredients').innerHTML = cook.ings.map(i => {
+                const val = i.q * state.guests;
+                const fmt = val >= 20 ? Math.round(val) : Number(val.toFixed(1));
+                return `<li class="flex justify-between gap-2 py-1 border-b bronze-hairline">
+                    <span>${esc(i.n)}</span><strong style="color:var(--bronze-bright);">${fmt} ${esc(i.u)}</strong>
+                </li>`;
+            }).join('');
+            document.getElementById('fire-steps').innerHTML = cook.steps.map(s => `<li>${esc(s)}</li>`).join('');
+
+            document.getElementById('trail-title').textContent = trail.title;
+            document.getElementById('trail-stats').textContent = trail.stats;
+            document.getElementById('trail-os').textContent = trail.os;
+            document.getElementById('trail-desc').textContent = trail.desc;
+            document.getElementById('trail-finley').textContent = trail.finley;
+            document.getElementById('trail-pub').textContent = trail.pub;
+            document.getElementById('sky-azimuth').textContent = trail.skyAz;
+            document.getElementById('sky-title').textContent = trail.skyTitle;
+            document.getElementById('sky-desc').textContent = trail.skyDesc;
+        }
+
+        function selectFireCook(k) { state.fireKey = k; renderHearthDeck(); }
+        function selectTrail(k) { state.trailKey = k; renderHearthDeck(); }
+        function adjustGuests(delta) {
+            state.guests = Math.max(2, Math.min(8, state.guests + delta));
+            saveState(); renderHearthDeck();
+        }
+
+        async function fetchGeminiWithBackoff(payload) {
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+            const delays = [1000, 2000, 4000];
+            for (let attempt = 0; attempt <= delays.length; attempt++) {
+                try {
+                    const res = await fetch(apiUrl, {
+                        method:'POST',
+                        headers:{ 'Content-Type':'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (res.ok) return await res.json();
+                } catch (err) {}
+                if (attempt < delays.length) await new Promise(r => setTimeout(r, delays[attempt]));
+            }
+            throw new Error('Gemini connection unavailable');
+        }
+
+        async function refreshHearthViaGemini() {
+            const lbl = document.getElementById('refresh-hearth-label');
+            lbl.textContent = 'Surveying Contours...';
+            if (state.passcode && state.cloudUrl) {
+                try {
+                    const cloudRes = await postCloud('run_scout_now', { mode: 'hearth' });
+                    if (cloudRes.data) applyCloudPayload(cloudRes.data);
+                    else await syncFromCloud(false);
+                    showToast('Synced fresh Hearth & Peak Dispatch from Skaffen_Command_DB.');
+                    lbl.textContent = 'Refresh Dispatch (Gemini)';
+                    return;
+                } catch (cloudErr) {}
+            }
+            try {
+                const payload = {
+                    contents:[{ parts:[{ text:"Generate a bespoke winter Weekend Hearth & Peak Dispatch for Cheadle/Peak District: 1 Kamado Joe live-fire cook (per-guest ingredient quantities so multiplying by guest count works cleanly) and 1 Peak District/Cheshire walk suitable for a fox-red Labrador named Finley plus a winter dark-sky target for 9-year-old Iona." }] }],
+                    systemInstruction:{ parts:[{ text:"You are Skaffen-Amtiskaw, bone-dry Culture tactical drone curating crisp Peak District routes and exact Kamado Joe live-fire cookery in metric (°C, g, ml, km)." }] },
+                    generationConfig:{
+                        responseMimeType:"application/json",
+                        responseSchema:{
+                            type:"OBJECT",
+                            properties:{
+                                fire:{
+                                    type:"OBJECT",
+                                    properties:{
+                                        title:{type:"STRING"}, desc:{type:"STRING"}, temps:{type:"STRING"},
+                                        wood:{type:"STRING"}, probe:{type:"STRING"},
+                                        ings:{ type:"ARRAY", items:{ type:"OBJECT", properties:{ n:{type:"STRING"}, q:{type:"NUMBER"}, u:{type:"STRING"} } } },
+                                        steps:{ type:"ARRAY", items:{ type:"STRING" } }
+                                    }
+                                },
+                                trail:{
+                                    type:"OBJECT",
+                                    properties:{
+                                        title:{type:"STRING"}, stats:{type:"STRING"}, os:{type:"STRING"},
+                                        desc:{type:"STRING"}, finley:{type:"STRING"}, pub:{type:"STRING"},
+                                        skyAz:{type:"STRING"}, skyTitle:{type:"STRING"}, skyDesc:{type:"STRING"}
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+                const data = await fetchGeminiWithBackoff(payload);
+                const parsed = JSON.parse(data.candidates[0].content.parts[0].text);
+                if (parsed.fire && parsed.trail) {
+                    state.aiFire = parsed.fire; state.aiTrail = parsed.trail;
+                    state.fireKey = 'ai'; state.trailKey = 'ai';
+                    renderHearthDeck();
+                    showToast('Fresh Hearth & Peak Dispatch compiled.');
+                }
+            } catch (e) {
+                showToast('Offline fallback retained — preset dispatches ready.');
+            } finally {
+                lbl.textContent = 'Refresh Dispatch (Gemini)';
+            }
+        }
+
+        /* ==========================================================================
+           7. PASS 3: DIRECT GEMINI LIVE WEBSOCKET VOICE (CHARON) + FALLBACK COMMS
+           ========================================================================== */
+        const audioState = {
+            ctx:null, analyser:null, freqBuf:null, stream:null, workletNode:null,
+            workletLoaded:false, outGain:null, recog:null, ws:null,
+            listening:false, liveActive:false, setupDone:false,
+            nextStartTime:0, activeSources:new Set()
+        };
+
+        const PCM16_WORKLET_SRC = `
+        class SkaffenPcm16Capture extends AudioWorkletProcessor {
+            constructor() { super(); this.buf = new Int16Array(1600); this.idx = 0; }
+            process(inputs) {
+                const ch = inputs[0] && inputs[0][0];
+                if (!ch) return true;
+                const step = sampleRate / 16000;
+                for (let i = 0; i < ch.length; i += step) {
+                    const s = Math.max(-1, Math.min(1, ch[Math.floor(i)] || 0));
+                    this.buf[this.idx++] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+                    if (this.idx >= this.buf.length) {
+                        const chunk = this.buf.slice(0);
+                        this.port.postMessage(chunk.buffer, [chunk.buffer]);
+                        this.idx = 0;
+                    }
+                }
+                return true;
+            }
+        }
+        registerProcessor('skaffen-pcm16-cap', SkaffenPcm16Capture);`;
+
+        function bytesToB64(bytes) {
+            let bin = '';
+            for (let i = 0; i < bytes.byteLength; i++) bin += String.fromCharCode(bytes[i]);
+            return btoa(bin);
+        }
+        function b64ToBytes(b64) {
+            const bin = atob(b64), out = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+            return out;
+        }
+
+        function buildLiveSystemInstruction() {
+            const wA = cachedWeeks[state.winStart], wB = cachedWeeks[Math.min(38, state.winStart + 1)];
+            const snap14 = [...wA.days, ...(wB ? wB.days : [])].map(d =>
+                `${d.iso}(${DAY_SHORT[d.dIdx]}):${d.leave ? d.leave.type : d.base.short}${d.oncall ? '+' + d.oncall : ''}${d.protectAM ? '[ProtectAM]' : ''}`
+            ).join(', ');
+            const nextOc = Object.keys(state.oncalls).sort().filter(k => k >= TODAY_ISO).slice(0, 5).map(k => `${k}:${state.oncalls[k]}`).join(', ');
+            return `You are Skaffen-Amtiskaw, hyper-competent Culture tactical drone serving Dr Richard Templeton (Consultant in Cardiac Critical Care/Anaesthesia/ECMO & Deputy Medical Director for CSS at MFT, Cheadle). Speak with crisp, bone-dry British restraint—concise, sharp, protective of downtime and post-CC1 mornings, zero sycophancy. Reference date: Sun 15 Nov 2026 (12th Anniversary with Rachel; Iona turns 9 on Wed 18 Nov mid-CTCCU). CT Deliverable: ${document.getElementById('val-ct-net').textContent}/42.0; AL: ${document.getElementById('val-al-main').textContent}; Next On-Calls: ${nextOc}. Active 14-day rota window: ${snap14}.`;
+        }
+
+        function clearLivePlaybackQueue() {
+            audioState.activeSources.forEach(src => { try { src.stop(); } catch(e) {} });
+            audioState.activeSources.clear();
+            audioState.nextStartTime = 0;
+        }
+
+        function enqueuePcm24kChunk(b64) {
+            if (!audioState.ctx || !audioState.outGain) return;
+            const bytes = b64ToBytes(b64);
+            const pcm16 = new Int16Array(bytes.buffer, bytes.byteOffset, Math.floor(bytes.byteLength / 2));
+            const buf = audioState.ctx.createBuffer(1, pcm16.length, 24000);
+            const ch = buf.getChannelData(0);
+            for (let i = 0; i < pcm16.length; i++) ch[i] = pcm16[i] / 32768.0;
+
+            const src = audioState.ctx.createBufferSource();
+            src.buffer = buf;
+            src.connect(audioState.outGain);
+            src.onended = () => audioState.activeSources.delete(src);
+
+            audioState.nextStartTime = Math.max(audioState.nextStartTime, audioState.ctx.currentTime);
+            src.start(audioState.nextStartTime);
+            audioState.nextStartTime += buf.duration;
+            audioState.activeSources.add(src);
+        }
+
+        async function initWebAudioGraph(micStream) {
+            audioState.ctx = audioState.ctx || new (window.AudioContext || window.webkitAudioContext)();
+            if (audioState.ctx.state === 'suspended') await audioState.ctx.resume();
+            if (!audioState.analyser) {
+                audioState.analyser = audioState.ctx.createAnalyser();
+                audioState.analyser.fftSize = 128;
+                audioState.freqBuf = new Uint8Array(audioState.analyser.frequencyBinCount);
+            }
+            if (!audioState.outGain) {
+                audioState.outGain = audioState.ctx.createGain();
+                audioState.outGain.connect(audioState.analyser);
+                audioState.outGain.connect(audioState.ctx.destination);
+            }
+            if (micStream) {
+                const micTap = audioState.ctx.createMediaStreamSource(micStream);
+                micTap.connect(audioState.analyser); // Pure FFT aura feed (no speaker loopback)
+            }
+        }
+
+        async function startGeminiLiveVoice(apiVer = 'v1alpha') {
+            const tokRes = await postCloud('mint_live_token', {});
+            const tok = tokRes.token;
+            if (!tok || !tok.name) throw new Error('Ephemeral token missing from mint_live_token.');
+
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: { channelCount:1, echoCancellation:true, noiseSuppression:true, autoGainControl:true }
+            });
+            audioState.stream = stream;
+            await initWebAudioGraph(stream);
+
+            if (!audioState.workletLoaded) {
+                const blobUrl = URL.createObjectURL(new Blob([PCM16_WORKLET_SRC], { type:'application/javascript' }));
+                await audioState.ctx.audioWorklet.addModule(blobUrl);
+                URL.revokeObjectURL(blobUrl);
+                audioState.workletLoaded = true;
+            }
+
+            const wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.${apiVer}.GenerativeService.BidiGenerateContentConstrained?access_token=${encodeURIComponent(tok.name)}`;
+            const ws = new WebSocket(wsUrl);
+            audioState.ws = ws;
+            audioState.liveActive = true;
+            audioState.setupDone = false;
+            updateMicButtons(true);
+
+            const micSrc = audioState.ctx.createMediaStreamSource(stream);
+            const worklet = new AudioWorkletNode(audioState.ctx, 'skaffen-pcm16-cap');
+            const zeroGain = audioState.ctx.createGain();
+            zeroGain.gain.value = 0;
+            audioState.workletNode = worklet;
+
+            worklet.port.onmessage = ev => {
+                if (ws.readyState === WebSocket.OPEN && audioState.setupDone) {
+                    const pcmBytes = new Uint8Array(ev.data);
+                    // Client-side barge-in energy check while Charon is speaking
+                    if (audioState.activeSources.size > 0) {
+                        const s16 = new Int16Array(ev.data);
+                        let rms = 0;
+                        for (let i = 0; i < s16.length; i += 4) rms += Math.abs(s16[i]);
+                        if (rms / (s16.length / 4) > 3600) clearLivePlaybackQueue();
+                    }
+                    ws.send(JSON.stringify({
+                        realtimeInput: { mediaChunks: [{ mimeType:'audio/pcm;rate=16000', data: bytesToB64(pcmBytes) }] }
+                    }));
+                }
+            };
+            micSrc.connect(worklet);
+            worklet.connect(zeroGain);
+            zeroGain.connect(audioState.ctx.destination);
+
+            ws.onopen = () => {
+                const modelId = String(tok.liveModel || 'gemini-2.5-flash-native-audio-preview-09-2025').replace(/^models\//, '');
+                ws.send(JSON.stringify({
+                    setup: {
+                        model: 'models/' + modelId,
+                        generationConfig: {
+                            responseModalities: ['AUDIO'],
+                            speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Charon' } } }
+                        },
+                        systemInstruction: { parts: [{ text: buildLiveSystemInstruction() }] }
+                    }
+                }));
+                setTimeout(() => { if (audioState.ws === ws) audioState.setupDone = true; }, 450);
+                showToast('Charon Live two-way voice linked. Speak freely (barge-in active).');
+            };
+
+            ws.onmessage = async ev => {
+                try {
+                    const raw = (ev.data instanceof Blob) ? await ev.data.text() : ev.data;
+                    const msg = JSON.parse(raw);
+                    if (msg.setupComplete !== undefined) audioState.setupDone = true;
+                    const sc = msg.serverContent;
+                    if (sc) {
+                        if (sc.interrupted) clearLivePlaybackQueue();
+                        const parts = (sc.modelTurn && sc.modelTurn.parts) || [];
+                        parts.forEach(p => {
+                            if (p.inlineData && p.inlineData.data) enqueuePcm24kChunk(p.inlineData.data);
+                        });
+                    }
+                } catch (e) {}
+            };
+
+            ws.onerror = () => {
+                if (!audioState.setupDone && apiVer === 'v1alpha') {
+                    stopVoiceMic();
+                    audioState.listening = true;
+                    startGeminiLiveVoice('v1beta').catch(() => stopVoiceMic());
+                    return;
+                }
+                showToast('Live voice socket closed — reverting to ask_skaffen TTS relay.');
+                stopVoiceMic();
+            };
+            ws.onclose = () => { if (audioState.liveActive && audioState.ws === ws) stopVoiceMic(); };
+        }
+
+        async function toggleVoiceMic() {
+            if (audioState.listening || audioState.liveActive) { stopVoiceMic(); return; }
+            toggleCommsDrawer(true);
+            audioState.listening = true;
+            updateMicButtons(true);
+
+            // 1. Direct Gemini Live Two-Way WebSocket (Charon) when Cloud Link is authenticated
+            if (state.passcode && state.cloudUrl && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                try {
+                    await startGeminiLiveVoice('v1alpha');
+                    return;
+                } catch (liveErr) {
+                    clearLivePlaybackQueue();
+                    audioState.liveActive = false;
+                }
+            }
+
+            // 2. Clean Sandbox / Unauthenticated Fallback: Web Audio FFT + SpeechRecognition -> ask_skaffen + UK TTS
+            try {
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    audioState.stream = await navigator.mediaDevices.getUserMedia({ audio:true });
+                    await initWebAudioGraph(audioState.stream);
+                }
+            } catch (err) {
+                coreAnim.simSpeak = true;
+            }
+
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) {
+                showToast('Mic restricted in sandboxed preview—type in HUD or open standalone PWA.');
+                stopVoiceMic();
+                return;
+            }
+            const recog = new SR();
+            recog.lang = 'en-GB';
+            recog.interimResults = true;
+            recog.onresult = ev => {
+                let txt = '';
+                for (let i = ev.resultIndex; i < ev.results.length; i++) txt += ev.results[i][0].transcript;
+                document.getElementById('comms-input').value = txt;
+                if (ev.results[ev.results.length - 1].isFinal && txt.trim()) {
+                    stopVoiceMic();
+                    submitCommsPrompt(txt.trim());
+                }
+            };
+            recog.onerror = () => stopVoiceMic();
+            recog.onend = () => { if (audioState.listening && !audioState.liveActive) stopVoiceMic(); };
+            audioState.recog = recog;
+            try { recog.start(); } catch(e) { stopVoiceMic(); }
+        }
+
+        function stopVoiceMic() {
+            audioState.listening = false;
+            audioState.liveActive = false;
+            audioState.setupDone = false;
+            coreAnim.simSpeak = false;
+            clearLivePlaybackQueue();
+            if (audioState.workletNode) { try { audioState.workletNode.disconnect(); } catch(e) {} audioState.workletNode = null; }
+            if (audioState.ws) { const oldWs = audioState.ws; audioState.ws = null; try { oldWs.close(); } catch(e) {} }
+            if (audioState.recog) { try { audioState.recog.stop(); } catch(e) {} audioState.recog = null; }
+            if (audioState.stream) { audioState.stream.getTracks().forEach(t => t.stop()); audioState.stream = null; }
+            document.getElementById('voice-freq-badge').textContent = 'AUDIO: IDLE';
+            updateMicButtons(false);
+        }
+
+        function updateMicButtons(on) {
+            const heroBtn = document.getElementById('btn-voice-mic');
+            heroBtn.className = 'btn-instrument px-3.5 py-2 ' + (on ? 'btn-voice-active' : 'btn-bronze-solid');
+            document.getElementById('mic-btn-label').textContent = on
+                ? (audioState.liveActive ? 'Charon Live Active • Tap to End' : 'Listening... Tap to Stop')
+                : 'Voice Link: Push to Speak';
+            document.getElementById('hud-mic-label').textContent = on ? 'End' : 'Listen';
+        }
+
+        function speakDryBritish(text) {
+            if (!state.ttsOn || !('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const clean = text.replace(/[*_`#]/g, '');
+            const utt = new SpeechSynthesisUtterance(clean);
+            const voices = window.speechSynthesis.getVoices();
+            const pick = voices.find(v => /Google UK English Male|Daniel|Arthur|Ryan/i.test(v.name)) ||
+                         voices.find(v => /en-GB/i.test(v.lang)) || voices[0];
+            if (pick) utt.voice = pick;
+            utt.rate = 1.03; utt.pitch = 0.92;
+            utt.onstart = () => { coreAnim.simSpeak = true; };
+            utt.onend = () => { coreAnim.simSpeak = false; document.getElementById('voice-freq-badge').textContent = 'AUDIO: IDLE'; };
+            utt.onerror = () => { coreAnim.simSpeak = false; };
+            window.speechSynthesis.speak(utt);
+        }
+
+        function toggleTtsVoice() {
+            state.ttsOn = !state.ttsOn;
+            if (!state.ttsOn && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+            document.getElementById('btn-tts-toggle').textContent = state.ttsOn ? '🔊 Spoken Reply: ON' : '🔇 Spoken Reply: MUTED';
+        }
+
+        /* Instant Local Command Parser + Structured AI Action Executor */
+        function parseLocalActions(text) {
+            const low = text.toLowerCase(), executed = [];
+            // 1. Hold / release gig match
+            getCombinedReconList().forEach(r => {
+                const keyWords = r.title.toLowerCase().split('@')[0].trim();
+                const shortKey = keyWords.split(' ').slice(0, 2).join(' ');
+                if ((low.includes('hold') || low.includes('pin') || low.includes('book')) && (low.includes(shortKey) || low.includes(r.id.split('-')[0]))) {
+                    state.heldIds[r.id] = true;
+                    if (state.passcode && state.cloudUrl) postCloud('update_alert', { alertId: r.cloudId || r.id, status:'Held' }).catch(()=>{});
+                    executed.push(`Pinned ${r.title} (${r.iso}) onto your rota`);
+                    jumpToIso(r.iso);
+                }
+            });
+            // 2. Draft leave on "<day> <month>"
+            const mMatch = low.match(/(?:draft|add|book|toggle)\s+(?:annual\s+)?(?:study\s+)?leave.*?(\d{1,2})\s*(nov|dec|jan|feb|mar|apr|may|jun|jul|aug)/i);
+            if (mMatch) {
+                const dayNum = +mMatch[1];
+                const mIdx = MONTHS.findIndex(m => m.toLowerCase() === mMatch[2].slice(0,3).toLowerCase());
+                const yr = mIdx >= 10 ? 2026 : 2027;
+                const iso = toISO(new Date(yr, mIdx, dayNum));
+                const lType = low.includes('study') ? 'SL' : 'AL';
+                state.leaves[iso] = { type:lType, status:'Draft', note:`Draft ${lType} via Skaffen` };
+                if (state.passcode && state.cloudUrl) postCloud('upsert_override', { isoDate:iso, kind:'LEAVE', value:lType, status:'Draft', note:`Draft ${lType} via Skaffen` }).catch(()=>{});
+                executed.push(`Drafted ${lType} on ${iso}`);
+                jumpToIso(iso);
+            }
+            // 3. Jump to month
+            const jMatch = low.match(/jump\s+(?:to\s+)?(nov|dec|jan|feb|mar|apr|may|jun|jul|aug)/i);
+            if (jMatch) {
+                const mIdx = MONTHS.findIndex(m => m.toLowerCase() === jMatch[1].slice(0,3).toLowerCase());
+                const found = cachedWeeks.find(w => w.wStart.getMonth() === mIdx);
+                if (found) {
+                    state.winStart = Math.min(37, found.wIdx);
+                    switchDeck('flight');
+                    executed.push(`Shifted Flight Strip to ${MONTHS[mIdx]} ${found.wStart.getFullYear()}`);
+                }
+            }
+            if (executed.length) { saveState(); refreshAll(); }
+            return executed;
+        }
+
+        function renderCommsLog() {
+            const box = document.getElementById('comms-log');
+            box.innerHTML = state.chat.map(m => `
+                <div class="p-2.5 rounded-lg border ${m.role === 'user' ? 'ml-8 bronze-hairline' : 'mr-4'}"
+                     style="background:${m.role === 'user' ? 'var(--bg-subtle)' : 'var(--bg-elevated)'};">
+                    <span class="font-telemetry text-[9.5px] uppercase block mb-0.5" style="color:var(--bronze-bright);">
+                        ${m.role === 'user' ? 'DR TEMPLETON' : 'SKAFFEN-AMTISKAW'}
+                    </span>
+                    <div>${esc(m.text)}</div>
+                </div>
+            `).join('');
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function onCommsFormSubmit(e) {
+            e.preventDefault();
+            const inp = document.getElementById('comms-input');
+            const q = inp.value.trim();
+            if (!q) return;
+            inp.value = '';
+            submitCommsPrompt(q);
+        }
+
+        async function submitCommsPrompt(q) {
+            toggleCommsDrawer(true);
+            state.chat.push({ role:'user', text:q });
+            renderCommsLog();
+
+            const localDone = parseLocalActions(q);
+            const btn = document.getElementById('btn-comms-send');
+            btn.textContent = '...';
+
+            // Route via grounded Code.gs ask_skaffen (Sheet state + Google Search) when Cloud Link is authenticated
+            if (state.passcode && state.cloudUrl) {
+                try {
+                    const promptText = localDone.length ? `${q} [Client already executed: ${localDone.join('; ')}]` : q;
+                    const cloudAns = await postCloud('ask_skaffen', { prompt: promptText, useSearch: true });
+                    if (cloudAns && cloudAns.reply) {
+                        state.chat.push({ role:'skaffen', text:cloudAns.reply });
+                        renderCommsLog();
+                        speakDryBritish(cloudAns.reply);
+                        btn.textContent = 'Transmit';
+                        return;
+                    }
+                } catch (cloudErr) {}
+            }
+
+            const famSummary = computeFamilyList().slice(0, 6).map(f => `${f.name} (${f.iso}, in ${f.diffDays}d, ${f.rotaCtx})`).join('; ');
+            const gigSummary = getCombinedReconList().map(r => `${r.id}: ${r.title} on ${r.iso} [${evaluateReconClearance(r.iso).verdict.badge}]`).join('; ');
+            const sys = `You are Skaffen-Amtiskaw, the hyper-competent, bone-dry, sardonic Culture tactical drone acting as personal command intelligence for Dr Richard Templeton (Consultant in Cardiac Critical Care/Anaesthesia/ECMO & incoming Deputy Medical Director for CSS at MFT, Cheadle).
+Today is Sunday 15 Nov 2026 (Richard & Rachel's 12th Anniversary).
+Live Rota Telemetry: CT Deliverable ${document.getElementById('val-ct-net').textContent}/42.0; AL ${document.getElementById('val-al-main').textContent}; Protect AMs ${document.getElementById('val-protect-badge').textContent}.
+Upcoming Family Dates: ${famSummary}.
+Verified Manchester Recon: ${gigSummary}.
+Already executed client actions this turn: ${localDone.join(', ') || 'None'}.
+Keep replies concise (2-4 sharp sentences), accurate to exact dates, dryly witty without sycophancy.`;
+
+            try {
+                const payload = {
+                    contents:[{ parts:[{ text:q }] }],
+                    systemInstruction:{ parts:[{ text:sys }] },
+                    generationConfig:{
+                        responseMimeType:"application/json",
+                        responseSchema:{
+                            type:"OBJECT",
+                            properties:{
+                                reply:{ type:"STRING" },
+                                holdReconId:{ type:"STRING", description:"Optional recon id to hold if requested and not yet held, else empty string" },
+                                draftLeaveIso:{ type:"STRING", description:"Optional YYYY-MM-DD to toggle Draft AL if requested and not yet done, else empty string" },
+                                jumpIso:{ type:"STRING", description:"Optional YYYY-MM-DD to focus on Flight Strip, else empty string" }
+                            },
+                            required:["reply"]
+                        }
+                    }
+                };
+                const res = await fetchGeminiWithBackoff(payload);
+                const out = JSON.parse(res.candidates[0].content.parts[0].text);
+                if (localDone.length === 0) {
+                    if (out.holdReconId && VERIFIED_RECON.some(r => r.id === out.holdReconId)) state.heldIds[out.holdReconId] = true;
+                    if (out.draftLeaveIso && /^\d{4}-\d{2}-\d{2}$/.test(out.draftLeaveIso)) {
+                        state.leaves[out.draftLeaveIso] = { type:'AL', status:'Draft', note:'Draft AL via Skaffen' };
+                    }
+                    if (out.jumpIso && dayLookup[out.jumpIso]) jumpToIso(out.jumpIso);
+                    saveState(); refreshAll();
+                }
+                state.chat.push({ role:'skaffen', text:out.reply });
+                renderCommsLog();
+                speakDryBritish(out.reply);
+            } catch (err) {
+                const fallback = localDone.length
+                    ? `Executed locally: ${localDone.join('; ')}. Telemetry and clearance strips updated accordingly.`
+                    : `External comms relay momentarily quiet, though local telemetry remains sharp: CT deliverable stands at ${document.getElementById('val-ct-net').textContent} days, Iona turns nine Wednesday mid-CTCCU, and Hermanos Gutiérrez (2 Dec) plus Stow (4 Dec) remain zero-friction green lights.`;
+                state.chat.push({ role:'skaffen', text:fallback });
+                renderCommsLog();
+                speakDryBritish(fallback);
+            } finally {
+                btn.textContent = 'Transmit';
+            }
+        }
+
+        /* ==========================================================================
+           8. UI CONTROLS, SANDBOX MUTATIONS, MODALS & .ICS EXPORT
+           ========================================================================== */
+        function switchDeck(d) {
+            state.deck = d;
+            ['flight','recon','hearth'].forEach(k => {
+                document.getElementById('deck-' + k).className = (k === d ? 'space-y-5' : 'hidden');
+                document.getElementById('tab-' + k).className = 'deck-tab' + (k === d ? ' active' : '');
+            });
+        }
+
+        function toggleTheme() {
+            state.theme = state.theme === 'dusk' ? 'almanac' : 'dusk';
+            applyTheme(); saveState();
+        }
+        function applyTheme() {
+            document.documentElement.setAttribute('data-theme', state.theme);
+            document.getElementById('theme-icon').textContent = state.theme === 'dusk' ? '☀' : '☾';
+            document.getElementById('theme-label').textContent = state.theme === 'dusk' ? 'Field Almanac' : 'Highland Dusk';
+        }
+
+        function toggleAlView() { state.alMode = state.alMode === 'app' ? 'jp' : 'app'; updateTelemetryAndAura(); }
+        function stepWindow(dir) { state.expandAll = false; state.winStart = Math.max(0, Math.min(37, state.winStart + dir)); refreshAll(); }
+        function jumpToToday() { state.expandAll = false; state.winStart = 0; refreshAll(); showToast('Locked onto Today: Sun 15 Nov 2026.'); }
+        function selectStrataWeek(w) { state.expandAll = false; state.winStart = Math.min(37, w); refreshAll(); }
+        function toggleExpandAllWeeks() {
+            state.expandAll = !state.expandAll;
+            document.getElementById('btn-expand-all').textContent = state.expandAll ? '14-Day Flight View' : 'Show All 39 Wks';
+            renderStrataAndFlight();
+        }
+        function setStrataFilter(f) {
+            state.strataFilter = f;
+            ['all','pinch','optimiser','held'].forEach(k => document.getElementById('sf-'+k).className = 'chip-btn' + (k===f?' active':''));
+            renderStrataAndFlight();
+        }
+        function setTapMode(m) {
+            state.tapMode = m;
+            ['inspect','draft_al','draft_sl','cc1','cc2'].forEach(k => document.getElementById('tm-'+k).className = 'chip-btn' + (k===m?' active':''));
+        }
+        function toggleCommsDrawer(force) {
+            state.commsOpen = typeof force === 'boolean' ? force : !state.commsOpen;
+            document.getElementById('comms-drawer').className = state.commsOpen ? 'mt-3.5 machined-panel overflow-hidden border' : 'hidden';
+            if (state.commsOpen) renderCommsLog();
+        }
+
+        function mutateDay(iso, action) {
+            let overridePayload = null;
+            if (action === 'draft_al') {
+                if (state.leaves[iso] && state.leaves[iso].type === 'AL') {
+                    delete state.leaves[iso];
+                    overridePayload = { isoDate:iso, kind:'LEAVE', value:'', status:'Removed', note:'' };
+                } else {
+                    state.leaves[iso] = { type:'AL', status:'Draft', note:'Draft Annual Leave' };
+                    overridePayload = { isoDate:iso, kind:'LEAVE', value:'AL', status:'Draft', note:'Draft Annual Leave' };
+                }
+            } else if (action === 'draft_sl') {
+                if (state.leaves[iso] && state.leaves[iso].type === 'SL') {
+                    delete state.leaves[iso];
+                    overridePayload = { isoDate:iso, kind:'LEAVE', value:'', status:'Removed', note:'' };
+                } else {
+                    state.leaves[iso] = { type:'SL', status:'Draft', note:'Draft Study Leave' };
+                    overridePayload = { isoDate:iso, kind:'LEAVE', value:'SL', status:'Draft', note:'Draft Study Leave' };
+                }
+            } else if (action === 'cc1' || action === 'cc2') {
+                const code = action.toUpperCase();
+                if (state.oncalls[iso] === code) {
+                    delete state.oncalls[iso];
+                    overridePayload = { isoDate:iso, kind:'ONCALL', value:'', status:'Removed', note:'' };
+                } else {
+                    state.oncalls[iso] = code;
+                    overridePayload = { isoDate:iso, kind:'ONCALL', value:code, status:'Approved', note:'App Override' };
+                }
+            }
+            saveState(); refreshAll();
+            if (overridePayload && state.passcode && state.cloudUrl) {
+                postCloud('upsert_override', overridePayload).catch(() => {});
+            }
+        }
+
+        function onFlightCardTap(iso) {
+            if (state.tapMode === 'inspect') openDayModal(iso);
+            else mutateDay(iso, state.tapMode);
+        }
+
+        function openDayModal(iso) {
+            state.modalIso = iso;
+            const d = dayLookup[iso]; if (!d) return;
+            document.getElementById('modal-jp-tag').textContent = `Cycle ${d.cycle} • Job Plan Week ${d.jpWeek}`;
+            document.getElementById('modal-date-title').textContent = `${DAY_FULL[d.dIdx]}, ${d.dt.getDate()} ${MONTHS[d.dt.getMonth()]} ${d.dt.getFullYear()}`;
+            let rows = `
+                <div class="flex justify-between"><span>Base Job Plan:</span><strong>${d.base.label} (${d.base.pas} PA)</strong></div>
+                <div class="flex justify-between"><span>CT Deliverable:</span><strong>${d.base.clinical ? 'Yes (1.0 CT d)' : 'No'}</strong></div>
+                <div class="flex justify-between"><span>CTCCU On-Call:</span><strong>${d.oncall || 'None'}</strong></div>
+                <div class="flex justify-between"><span>Leave Status:</span><strong>${d.leave ? d.leave.status + ' ' + d.leave.type : 'None'}</strong></div>`;
+            if (d.fam) rows += `<div class="pt-1 font-semibold" style="color:var(--bronze-bright);">★ Family: ${esc(d.fam.name)}</div>`;
+            if (d.held) rows += `<div class="pt-1 font-semibold" style="color:var(--bronze-bright);">🎟 Held Event: ${esc(d.held.title)}</div>`;
+            if (d.protectAM) rows += `<div class="p-2 mt-1 rounded font-semibold" style="background:var(--ochre-soft);color:var(--ochre-text);">🛡 Post-CC1 Morning Shield Active</div>`;
+            document.getElementById('modal-info-rows').innerHTML = rows;
+            document.getElementById('day-modal').className = 'modal-backdrop';
+        }
+        function modalToggle(act) { if (state.modalIso) { mutateDay(state.modalIso, act); openDayModal(state.modalIso); } }
+        function closeDayModal() { document.getElementById('day-modal').className = 'modal-backdrop hidden'; }
+        function openLedgerModal() { document.getElementById('ledger-modal').className = 'modal-backdrop'; }
+        function closeLedgerModal() { document.getElementById('ledger-modal').className = 'modal-backdrop hidden'; }
+
+        function triggerReset() {
+            const btn = document.getElementById('btn-reset');
+            if (!state.resetArmed) {
+                state.resetArmed = true; btn.textContent = 'Tap to Confirm';
+                setTimeout(() => { state.resetArmed = false; btn.textContent = 'Reset'; }, 3000);
+                return;
+            }
+            state.resetArmed = false; btn.textContent = 'Reset';
+            state.oncalls = { ...DEFAULT_ONCALLS }; state.leaves = buildDefaultLeaves();
+            state.heldIds = {}; state.dismissedIds = {}; state.sortedFam = {};
+            saveState(); refreshAll();
+            showToast('Rota, holds & sandbox reset to baseline.');
+        }
+
+        function exportICS() {
+            const lines = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Skaffen v2 MFT Command Centre//EN','CALSCALE:GREGORIAN'];
+            let uid = 1000;
+            cachedWeeks.forEach(w => w.days.forEach(d => {
+                const s = d.iso.replace(/-/g,''), e = shiftISO(d.iso, 1).replace(/-/g,'');
+                if (d.leave) {
+                    lines.push('BEGIN:VEVENT',`UID:skf-lv-${uid++}@mft`,`DTSTART;VALUE=DATE:${s}`,`DTEND;VALUE=DATE:${e}`,`SUMMARY:LEAVE: ${d.leave.status} ${d.leave.type}`,'END:VEVENT');
+                } else if (d.base.pas > 0) {
+                    lines.push('BEGIN:VEVENT',`UID:skf-jp-${uid++}@mft`,`DTSTART;VALUE=DATE:${s}`,`DTEND;VALUE=DATE:${e}`,`SUMMARY:JP Wk ${d.jpWeek}: ${d.base.label}${d.protectAM?' [Protect AM]':''}`,'END:VEVENT');
+                }
+                if (d.oncall) lines.push('BEGIN:VEVENT',`UID:skf-oc-${uid++}@mft`,`DTSTART;VALUE=DATE:${s}`,`DTEND;VALUE=DATE:${e}`,`SUMMARY:ON-CALL: CTCCU ${d.oncall}`,'END:VEVENT');
+                if (d.held) lines.push('BEGIN:VEVENT',`UID:skf-hd-${uid++}@mft`,`DTSTART;VALUE=DATE:${s}`,`DTEND;VALUE=DATE:${e}`,`SUMMARY:HELD: ${d.held.title}`,'END:VEVENT');
+            }));
+            lines.push('END:VCALENDAR');
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([lines.join('\r\n')], { type:'text/calendar;charset=utf-8' }));
+            a.download = 'Skaffen_MFT_Nov2026_Aug2027.ics';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            showToast('Exported 39-week .ICS calendar.');
+        }
+
+        function refreshAll() {
+            buildSchedule();
+            updateTelemetryAndAura();
+            render8WeekBezel();
+            renderStrataAndFlight();
+            renderFamilyRadar();
+            renderReconSlips();
+            renderHearthDeck();
+        }
+
+        /* ==========================================================================
+           9. DYNAMIC PWA MANIFEST, SVG ICON & CLEAN DEPLOYABLE INDEX.HTML EXPORTER
+           ========================================================================== */
+        const CLEAN_HTML_SNAPSHOT = document.documentElement.outerHTML;
+
+        function injectPwaManifest() {
+            const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="42" fill="#080d17"/><circle cx="96" cy="96" r="74" fill="none" stroke="#c8a26a" stroke-width="2.5" stroke-dasharray="5 5"/><ellipse cx="96" cy="96" rx="64" ry="25" transform="rotate(-28 96 96)" fill="none" stroke="#b08d57" stroke-width="3"/><ellipse cx="96" cy="96" rx="64" ry="25" transform="rotate(36 96 96)" fill="none" stroke="#c8a26a" stroke-width="3"/><circle cx="96" cy="96" r="34" fill="#131d30" stroke="#be123c" stroke-width="3.2"/></svg>`;
+            const iconUri = 'data:image/svg+xml;utf8,' + encodeURIComponent(svgIcon);
+
+            ['icon', 'apple-touch-icon'].forEach(rel => {
+                const lnk = document.createElement('link');
+                lnk.rel = rel; lnk.href = iconUri;
+                document.head.appendChild(lnk);
+            });
+
+            const manifest = {
+                name: 'SKAFFEN // Tactical Command Centre',
+                short_name: 'Skaffen',
+                description: 'Skaffen-Amtiskaw Personal Command Centre — MFT Rota, Recon & Live Voice',
+                start_url: './index.html',
+                display: 'standalone',
+                background_color: '#080d17',
+                theme_color: '#080d17',
+                icons: [{ src: iconUri, sizes: '192x192 512x512', type: 'image/svg+xml', purpose: 'any maskable' }]
+            };
+            const manLink = document.createElement('link');
+            manLink.rel = 'manifest';
+            manLink.href = 'data:application/manifest+json;utf8,' + encodeURIComponent(JSON.stringify(manifest));
+            document.head.appendChild(manLink);
+        }
+
+        function downloadDeployableHtml() {
+            let cleanDoc = '<!DOCTYPE html>\n' + CLEAN_HTML_SNAPSHOT;
+            if (state.cloudUrl && state.cloudUrl !== DEFAULT_BACKEND_URL) {
+                cleanDoc = cleanDoc.replace(DEFAULT_BACKEND_URL, state.cloudUrl);
+            }
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([cleanDoc], { type:'text/html;charset=utf-8' }));
+            a.download = 'index.html';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            showToast('Exported clean standalone index.html (zero credentials in source).');
+        }
+
+        window.onload = function() {
+            injectPwaManifest();
+            loadState();
+            applyTheme();
+            setCloudStatus(state.cloudUrl ? (state.passcode ? 'syncing' : 'auth_needed') : 'local');
+            if ('speechSynthesis' in window) window.speechSynthesis.getVoices();
+            refreshAll();
+            initDroneCore();
+            if (state.passcode && state.cloudUrl) syncFromCloud(false);
+        };
+    </script>
+</body>
+</html>

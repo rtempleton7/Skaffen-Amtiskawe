@@ -452,7 +452,7 @@
                 <div class="flex items-center gap-2 min-w-0 flex-1">
                     <span class="font-telemetry text-[10px] uppercase tracking-widest px-2 py-0.5 rounded flex-shrink-0" style="background: rgba(200,162,106,0.18); color: var(--bronze-bright);">SKAFFEN</span>
                     <p id="skaffen-readout" class="text-xs italic" style="color: var(--text-primary);">
-                        12th Anniversary logged today. Five consecutive CTCCU days start 08:00 tomorrow; Iona turns nine mid-block on Wednesday (5-day alert active).
+                        Initialising telemetry…
                     </p>
                 </div>
                 <div class="flex items-center gap-2">
@@ -513,7 +513,7 @@
                     </div>
                     <div class="flex flex-wrap items-center gap-1.5">
                         <button type="button" onclick="stepWindow(-1)" class="btn-instrument px-2.5 py-1.5">◀ Prev Wk</button>
-                        <button type="button" onclick="jumpToToday()" class="btn-instrument btn-bronze-solid px-3 py-1.5">⌖ Today (15 Nov)</button>
+                        <button type="button" onclick="jumpToToday()" class="btn-instrument btn-bronze-solid px-3 py-1.5">⌖ Today</button>
                         <button type="button" onclick="stepWindow(1)" class="btn-instrument px-2.5 py-1.5">Next Wk ▶</button>
                         <button type="button" onclick="toggleExpandAllWeeks()" id="btn-expand-all" class="btn-instrument px-3 py-1.5">Show All 39 Wks</button>
                     </div>
@@ -568,7 +568,7 @@
                 <div class="lg:col-span-5 machined-panel p-4 sm:p-5 space-y-3.5">
                     <div class="flex items-center justify-between pb-2.5 border-b bronze-hairline">
                         <div>
-                            <span class="font-telemetry text-[10px] uppercase tracking-widest" style="color: var(--bronze-bright);">Anchored Sun 15 Nov 2026 • 12 Annual Dates</span>
+                            <span id="fam-anchor-label" class="font-telemetry text-[10px] uppercase tracking-widest" style="color: var(--bronze-bright);">Annual Dates</span>
                             <h2 class="font-editorial text-2xl font-bold">Staged Family Milestone Radar</h2>
                         </div>
                         <span class="font-telemetry text-[10px] px-2 py-0.5 rounded border bronze-hairline" style="color: var(--pine-text);">21d &amp; 5d Rules</span>
@@ -840,7 +840,13 @@
            ========================================================================== */
         const STORAGE_KEY = 'skaffen_v2_pass3_state';
         const DEFAULT_BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwImEgxTyblXiaA4sRxcHn4GETScu6cUI_1lSutScOn7BYbtBHxr6-8LQ0DBnF5ueP83A/exec';
-        const TODAY_ISO = '2026-11-15';
+        const TODAY_ISO = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
+        const ROTA_ANCHOR_ISO = '2026-11-09'; // Mon of JP Wk 1, Cycle 1 (39-week generator start)
+        function todayWeekIdx() {
+            const a = new Date(2026, 10, 9), t = new Date(); t.setHours(0,0,0,0);
+            return Math.max(0, Math.min(37, Math.floor((t - a) / (7 * 86400000))));
+        }
+        const ordinal = n => n + (['th','st','nd','rd'][((n % 100) - 20) % 10] || ['th','st','nd','rd'][n % 100] || 'th');
         const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
         const DAY_SHORT = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
         const DAY_FULL = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
@@ -911,10 +917,10 @@
             return m;
         }
 
-        /* 12 Recurring Family Dates (Anchored to Today = 15 Nov 2026) */
-        const FAMILY_DATES = [
-            { id:'anniv',   m:11, d:15, name:"Richard & Rachel Anniversary", short:"Anniversary" },
-            { id:'iona',    m:11, d:18, name:"Iona's 9th Birthday",          short:"Iona B'day" },
+        /* Default family dates — seeded once into the Family_Dates sheet tab, which is then the master copy */
+        const DEFAULT_FAMILY_DATES = [
+            { id:'anniv',   m:11, d:15, name:"Richard & Rachel Anniversary", short:"Anniversary", year:2014 },
+            { id:'iona',    m:11, d:18, name:"Iona's Birthday",              short:"Iona B'day",  year:2017 },
             { id:'mum',     m:11, d:28, name:"Mum's Birthday",               short:"Mum B'day" },
             { id:'rebecca', m:12, d:9,  name:"Rebecca's Birthday",           short:"Rebecca B'day" },
             { id:'blair',   m:12, d:10, name:"Blair's Birthday",             short:"Blair B'day" },
@@ -926,6 +932,7 @@
             { id:'megan',   m:7,  d:27, name:"Megan's Birthday",             short:"Megan B'day" },
             { id:'rachel',  m:10, d:25, name:"Rachel's Birthday",            short:"Rachel B'day" }
         ];
+        let FAMILY_DATES = DEFAULT_FAMILY_DATES.slice();
 
         /* 8 Verified Greater Manchester Listings */
         const VERIFIED_RECON = [
@@ -1068,7 +1075,7 @@
             reconCat:'all', fireKey:'venison', trailKey:'shining', guests:4,
             aiFire:null, aiTrail:null, plans:[],
             commsOpen:false, ttsOn:true, modalIso:null, resetArmed:false,
-            chat:[{ role:'skaffen', text:"Skaffen-Amtiskaw online. Happy 12th Anniversary to you and Rachel. Tomorrow begins five straight CTCCU shifts, with Iona turning nine on Wednesday. Open Cloud Link to authenticate Skaffen_Command_DB and direct Charon Live voice." }]
+            chat:[{ role:'skaffen', text:"Skaffen-Amtiskaw online.", greeting:true }], familyDates:[], syncedPlanIds:{}
         };
 
         function loadState() {
@@ -1087,6 +1094,9 @@
                     state.passcode = p.passcode || '';
                     state.cloudRecon = p.cloudRecon || [];
                     state.plans = Array.isArray(p.plans) ? p.plans : [];
+                    state.syncedPlanIds = p.syncedPlanIds || {};
+                    state.familyDates = Array.isArray(p.familyDates) ? p.familyDates : [];
+                    if (state.familyDates.length) FAMILY_DATES = state.familyDates;
                     state.cloudStatus = state.cloudUrl ? (state.passcode ? 'syncing' : 'auth_needed') : 'local';
                     return;
                 } catch(e) {}
@@ -1099,7 +1109,7 @@
                 theme:state.theme, oncalls:state.oncalls, leaves:state.leaves,
                 heldIds:state.heldIds, dismissedIds:state.dismissedIds, sortedFam:state.sortedFam,
                 guests:state.guests, cloudUrl:state.cloudUrl, passcode:state.passcode, cloudRecon:state.cloudRecon,
-                plans:state.plans
+                plans:state.plans, syncedPlanIds:state.syncedPlanIds, familyDates:state.familyDates
             }));
         }
 
@@ -1107,6 +1117,7 @@
             const seen = new Set(), merged = [];
             [...VERIFIED_RECON, ...state.cloudRecon].forEach(r => {
                 if (!r || !r.id || seen.has(r.id) || state.dismissedIds[r.id]) return;
+                if (r.iso && /^\d{4}-\d{2}-\d{2}$/.test(r.iso) && r.iso < TODAY_ISO) return;
                 seen.add(r.id);
                 merged.push(r);
             });
@@ -1326,6 +1337,18 @@
                 }
             }
             if (Array.isArray(data.watchlist)) state.watchlistCount = data.watchlist.length;
+            if (Array.isArray(data.diary)) mergeCloudDiary(data.diary);
+            if (Array.isArray(data.familyDates)) {
+                if (data.familyDates.length) {
+                    state.familyDates = data.familyDates.map(f => ({ id:f.id, name:f.name, short:f.short || f.name, m:+f.m, d:+f.d, year: f.year ? +f.year : null }));
+                    FAMILY_DATES = state.familyDates;
+                } else if (!state._famSeedSent) {
+                    state._famSeedSent = true;
+                    postCloud('seed_family_dates', { dates: DEFAULT_FAMILY_DATES })
+                        .then(r => { if (r && Array.isArray(r.familyDates) && r.familyDates.length) { state.familyDates = r.familyDates; FAMILY_DATES = r.familyDates; saveState(); refreshAll(); } })
+                        .catch(e => console.warn('[Skaffen] family seed failed', e));
+                }
+            }
 
             if (Array.isArray(data.activeAlerts)) {
                 const incoming = [];
@@ -1550,6 +1573,7 @@
             state.plans.push(plan);
             state.plans.sort((a, b) => (a.iso + a.time).localeCompare(b.iso + b.time));
             saveState(); refreshAll();
+            pushPlanToCloud(plan);
             return plan;
         }
 
@@ -1557,6 +1581,7 @@
             const p = state.plans.find(x => x.id === id);
             state.plans = state.plans.filter(x => x.id !== id);
             saveState(); refreshAll();
+            removePlanFromCloud(id);
             if (state.modalIso) openDayModal(state.modalIso);
             return p;
         }
@@ -1567,9 +1592,39 @@
             const words = String(text || '').toLowerCase().split(/\W+/).filter(w => w.length > 3);
             let hits = onDay.filter(p => words.some(w => p.title.toLowerCase().includes(w)));
             if (!hits.length && onDay.length === 1) hits = onDay;
-            hits.forEach(p => { state.plans = state.plans.filter(x => x.id !== p.id); });
+            hits.forEach(p => { state.plans = state.plans.filter(x => x.id !== p.id); removePlanFromCloud(p.id); });
             if (hits.length) { saveState(); refreshAll(); }
             return hits;
+        }
+
+        const cloudReady = () => !!(state.passcode && state.cloudUrl);
+        function pushPlanToCloud(plan) {
+            if (!cloudReady()) return;
+            postCloud('add_plan', { plan: { id: plan.id, iso: plan.iso, time: plan.time, title: plan.title, source: plan.source, created: plan.created } })
+                .then(() => { state.syncedPlanIds[plan.id] = true; saveState(); })
+                .catch(e => console.warn('[Skaffen diary] add_plan failed; will retry on next sync', e));
+        }
+        function removePlanFromCloud(id) {
+            delete state.syncedPlanIds[id];
+            if (!cloudReady()) return;
+            postCloud('remove_plan', { planId: id }).catch(e => console.warn('[Skaffen diary] remove_plan failed', e));
+        }
+        // Cloud diary is the master copy. Local plans never confirmed in the cloud are uploaded;
+        // plans confirmed earlier but now missing from the cloud were removed elsewhere, so drop them.
+        function mergeCloudDiary(cloudList) {
+            const cloud = cloudList.filter(p => p && p.id && /^\d{4}-\d{2}-\d{2}$/.test(p.iso));
+            const cloudIds = new Set(cloud.map(p => p.id));
+            const merged = cloud.map(p => ({ id: p.id, iso: p.iso, time: p.time || '', title: p.title, source: p.source || 'cloud', created: p.created || '' }));
+            const toUpload = [];
+            state.plans.forEach(p => {
+                if (cloudIds.has(p.id)) return;
+                if (state.syncedPlanIds[p.id]) return; // removed on another device
+                merged.push(p); toUpload.push(p);
+            });
+            state.syncedPlanIds = {};
+            cloudIds.forEach(id => { state.syncedPlanIds[id] = true; });
+            state.plans = merged.sort((a, b) => (a.iso + a.time).localeCompare(b.iso + b.time));
+            toUpload.forEach(pushPlanToCloud);
         }
 
         function describePlan(p) {
@@ -1663,6 +1718,28 @@
             };
             if (withTools) setup.tools = LIVE_DIARY_TOOLS;
             return { setup };
+        }
+
+        function dayRotaLabel(iso) {
+            const d = dayLookup[iso];
+            if (!d) return null;
+            let s = d.leave ? `${d.leave.status === 'Draft' ? 'Draft ' : ''}${d.leave.type}` : d.base.label;
+            if (d.oncall) s += ` + ${d.oncall} on-call`;
+            if (d.protectAM) s += ' (protect AM)';
+            return s;
+        }
+        function buildTodayBriefLine() {
+            const parts = [];
+            const t = dayRotaLabel(TODAY_ISO), tm = dayRotaLabel(shiftISO(TODAY_ISO, 1));
+            if (t) parts.push(`Today: ${t}.`);
+            if (tm) parts.push(`Tomorrow: ${tm}.`);
+            const todays = state.plans.filter(p => p.iso === TODAY_ISO);
+            if (todays.length) parts.push(`Diary today: ${todays.map(p => (p.time ? p.time + ' ' : '') + p.title).join(', ')}.`);
+            const nextPlan = state.plans.find(p => p.iso > TODAY_ISO);
+            if (nextPlan) parts.push(`Next plan: ${nextPlan.title}, ${prettyISO(nextPlan.iso)}.`);
+            const fam = (dayLookup[TODAY_ISO] ? computeFamilyList() : []).find(f => f.diffDays <= 21);
+            if (fam) parts.push(fam.diffDays === 0 ? `${fam.name} today.` : `${fam.name} in ${fam.diffDays}d (${prettyISO(fam.iso)}).`);
+            return parts.join(' ') || 'Telemetry nominal.';
         }
 
         let cachedWeeks = [], dayLookup = {};
@@ -1957,8 +2034,8 @@
                 `C${wA.cycle} • JP WK ${wA.jpWeek} → WK ${wB ? wB.jpWeek : wA.jpWeek}`;
 
             let line = `Viewing w/c ${wA.wStart.getDate()} ${MONTHS[wA.wStart.getMonth()]}: `;
-            if (state.winStart === 0) {
-                line = `12th Anniversary logged today. Five consecutive CTCCU shifts begin 08:00 tomorrow; Iona turns nine mid-block on Wednesday.`;
+            if (state.winStart === todayWeekIdx()) {
+                line = buildTodayBriefLine();
             } else if (hasCTCCU) {
                 line += `Heavy CTCCU clinical block in frame. Keep evening commitments lean.`;
             } else if (winCC1 >= 2) {
@@ -2073,14 +2150,16 @@
         function computeFamilyList() {
             const ref = parseISO(TODAY_ISO);
             return FAMILY_DATES.map(f => {
-                let yr = 2026;
+                let yr = ref.getFullYear();
                 let dt = new Date(yr, f.m - 1, f.d);
-                if (dt < ref) { yr = 2027; dt = new Date(yr, f.m - 1, f.d); }
+                if (dt < ref) { yr = yr + 1; dt = new Date(yr, f.m - 1, f.d); }
+                const age = f.year ? yr - f.year : null;
+                const name = age ? (/birthday/i.test(f.name) ? f.name.replace(/birthday/i, ordinal(age) + ' Birthday') : `${f.name} (${ordinal(age)})`) : f.name;
                 const iso = toISO(dt);
                 const diffDays = Math.round((dt - ref) / 86400000);
                 const rotaDay = dayLookup[iso] || null;
                 let stage = 'HORIZON', stageStyle = 'color:var(--text-muted);border-color:var(--border-subtle);';
-                if (diffDays === 0) { stage = 'TODAY • ANNIVERSARY'; stageStyle = 'background:var(--bronze-bright);color:#111;font-weight:700;'; }
+                if (diffDays === 0) { stage = 'TODAY'; stageStyle = 'background:var(--bronze-bright);color:#111;font-weight:700;'; }
                 else if (diffDays <= 5) { stage = `5-DAY CARD ALERT (${diffDays}d)`; stageStyle = 'background:var(--oxblood-soft);color:var(--oxblood-text);border-color:var(--oxblood-border);'; }
                 else if (diffDays <= 21) { stage = `21-DAY GIFT/TABLE (${diffDays}d)`; stageStyle = 'background:var(--ochre-soft);color:var(--ochre-text);border-color:var(--ochre-border);'; }
                 else if (diffDays <= 35) { stage = `ON DECK (${diffDays}d)`; stageStyle = 'background:var(--pine-soft);color:var(--pine-text);border-color:var(--pine-border);'; }
@@ -2092,12 +2171,14 @@
                     if (rotaDay.protectAM) parts.push('Protect AM');
                     rotaCtx = parts.join(' • ');
                 }
-                return { ...f, iso, dt, diffDays, stage, stageStyle, rotaDay, rotaCtx, sorted: !!state.sortedFam[f.id] };
+                return { ...f, name, iso, dt, diffDays, stage, stageStyle, rotaDay, rotaCtx, sorted: !!state.sortedFam[f.id] };
             }).sort((a, b) => a.diffDays - b.diffDays);
         }
 
         function renderFamilyRadar() {
             const list = computeFamilyList();
+            const famLbl = document.getElementById('fam-anchor-label');
+            if (famLbl) famLbl.textContent = `Today ${prettyISO(TODAY_ISO)} • ${list.length} Annual Dates`;
             // Top 3 Urgent Strip in Deck 01
             const urgent = list.slice(0, 3);
             document.getElementById('top-family-strip').innerHTML = urgent.map(f => `
@@ -2452,7 +2533,7 @@
                 `${d.iso}(${DAY_SHORT[d.dIdx]}):${d.leave ? d.leave.type : d.base.short}${d.oncall ? '+' + d.oncall : ''}${d.protectAM ? '[ProtectAM]' : ''}`
             ).join(', ');
             const nextOc = Object.keys(state.oncalls).sort().filter(k => k >= TODAY_ISO).slice(0, 5).map(k => `${k}:${state.oncalls[k]}`).join(', ');
-            return `You are Skaffen-Amtiskaw, hyper-competent Culture tactical drone serving Dr Richard Templeton (Consultant in Cardiac Critical Care/Anaesthesia/ECMO & Deputy Medical Director for CSS at MFT, Cheadle). Speak with crisp, bone-dry British restraint—concise, sharp, protective of downtime and post-CC1 mornings, zero sycophancy. Reference date: Sun 15 Nov 2026 (12th Anniversary with Rachel; Iona turns 9 on Wed 18 Nov mid-CTCCU). CT Deliverable: ${document.getElementById('val-ct-net').textContent}/42.0; AL: ${document.getElementById('val-al-main').textContent}; Next On-Calls: ${nextOc}. Active 14-day rota window: ${snap14}.`;
+            return `You are Skaffen-Amtiskaw, hyper-competent Culture tactical drone serving Dr Richard Templeton (Consultant in Cardiac Critical Care/Anaesthesia/ECMO & Deputy Medical Director for CSS at MFT, Cheadle). Speak with crisp, bone-dry British restraint—concise, sharp, protective of downtime and post-CC1 mornings, zero sycophancy. Today: ${prettyISO(TODAY_ISO)} ${TODAY_ISO}. Upcoming family dates: ${computeFamilyList().slice(0, 4).map(f => `${f.name} ${f.iso} (in ${f.diffDays}d)`).join('; ')}. CT Deliverable: ${document.getElementById('val-ct-net').textContent}/42.0; AL: ${document.getElementById('val-al-main').textContent}; Next On-Calls: ${nextOc}. Active 14-day rota window: ${snap14}.`;
         }
 
         function clearLivePlaybackQueue() {
@@ -2799,7 +2880,7 @@
             const famSummary = computeFamilyList().slice(0, 6).map(f => `${f.name} (${f.iso}, in ${f.diffDays}d, ${f.rotaCtx})`).join('; ');
             const gigSummary = getCombinedReconList().map(r => `${r.id}: ${r.title} on ${r.iso} [${evaluateReconClearance(r.iso).verdict.badge}]`).join('; ');
             const sys = `You are Skaffen-Amtiskaw, the hyper-competent, bone-dry, sardonic Culture tactical drone acting as personal command intelligence for Dr Richard Templeton (Consultant in Cardiac Critical Care/Anaesthesia/ECMO & incoming Deputy Medical Director for CSS at MFT, Cheadle).
-Today is Sunday 15 Nov 2026 (Richard & Rachel's 12th Anniversary).
+Today is ${prettyISO(TODAY_ISO)} (${TODAY_ISO}). ${buildTodayBriefLine()}
 Live Rota Telemetry: CT Deliverable ${document.getElementById('val-ct-net').textContent}/42.0; AL ${document.getElementById('val-al-main').textContent}; Protect AMs ${document.getElementById('val-protect-badge').textContent}.
 Upcoming Family Dates: ${famSummary}.
 Verified Manchester Recon: ${gigSummary}.
@@ -2840,7 +2921,7 @@ Keep replies concise (2-4 sharp sentences), accurate to exact dates, dryly witty
             } catch (err) {
                 const fallback = localDone.length
                     ? `Executed locally: ${localDone.join('; ')}. Telemetry and clearance strips updated accordingly.`
-                    : `External comms relay momentarily quiet, though local telemetry remains sharp: CT deliverable stands at ${document.getElementById('val-ct-net').textContent} days, Iona turns nine Wednesday mid-CTCCU, and Hermanos Gutiérrez (2 Dec) plus Stow (4 Dec) remain zero-friction green lights.`;
+                    : `External comms relay momentarily quiet, though local telemetry remains sharp. ${buildTodayBriefLine()} CT deliverable stands at ${document.getElementById('val-ct-net').textContent} days.`;
                 if (backendErrNote) state.chat.push({ role:'skaffen', text:'⚠ Backend error — ' + backendErrNote });
                 state.chat.push({ role:'skaffen', text:fallback });
                 renderCommsLog();
@@ -2873,7 +2954,7 @@ Keep replies concise (2-4 sharp sentences), accurate to exact dates, dryly witty
 
         function toggleAlView() { state.alMode = state.alMode === 'app' ? 'jp' : 'app'; updateTelemetryAndAura(); }
         function stepWindow(dir) { state.expandAll = false; state.winStart = Math.max(0, Math.min(37, state.winStart + dir)); refreshAll(); }
-        function jumpToToday() { state.expandAll = false; state.winStart = 0; refreshAll(); showToast('Locked onto Today: Sun 15 Nov 2026.'); }
+        function jumpToToday() { state.expandAll = false; state.winStart = todayWeekIdx(); refreshAll(); showToast('Locked onto Today: ' + prettyISO(TODAY_ISO) + '.'); }
         function selectStrataWeek(w) { state.expandAll = false; state.winStart = Math.min(37, w); refreshAll(); }
         function toggleExpandAllWeeks() {
             state.expandAll = !state.expandAll;
@@ -3049,10 +3130,12 @@ Keep replies concise (2-4 sharp sentences), accurate to exact dates, dryly witty
         window.onload = function() {
             injectPwaManifest();
             loadState();
+            state.winStart = todayWeekIdx();
             applyTheme();
             setCloudStatus(state.cloudUrl ? (state.passcode ? 'syncing' : 'auth_needed') : 'local');
             if ('speechSynthesis' in window) window.speechSynthesis.getVoices();
             refreshAll();
+            if (state.chat[0] && state.chat[0].greeting) state.chat[0].text = `Skaffen-Amtiskaw online. ${buildTodayBriefLine()}`;
             initDroneCore();
             if (state.passcode && state.cloudUrl) syncFromCloud(false);
         };

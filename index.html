@@ -1766,6 +1766,24 @@
             if (d.protectAM) s += ' (protect AM)';
             return s;
         }
+        // Compact 39-week rota digest sent to Gemini (typed + voice) so it can reason about whole-year windows.
+        function buildRotaDigest() {
+            const code = d => {
+                let c = d.leave ? `${d.leave.status === 'Draft' ? 'draft ' : ''}${d.leave.type}` :
+                    ({ CTCCU:'CTCCU', CARDIAC:'Theatre', FLEX:'Flex', MGMT:'Mgmt', OFF:'Off', WKND:'Wknd' }[d.base.type] || d.base.short);
+                if (d.oncall) c += '+' + d.oncall;
+                if (d.bh) c += '(BH)';
+                return c;
+            };
+            const lines = cachedWeeks.map(w => {
+                const busy = w.days.some(d => !d.leave && (d.base.type === 'CTCCU' || d.base.type === 'CARDIAC' || d.oncall));
+                const plans = state.plans.filter(p => w.days.some(d => d.iso === p.iso || (p.end && p.iso <= d.iso && d.iso <= p.end))).map(p => p.title);
+                return `w/c ${w.days[0].iso} JP${w.jpWeek}: ` + w.days.map(d => `${DAY_SHORT[d.dIdx]} ${code(d)}`).join(', ')
+                    + (busy ? '' : ' [no CTCCU/theatre/on-call]') + (plans.length ? ` [diary: ${plans.join('; ')}]` : '');
+            });
+            return `ROTA (all ${cachedWeeks.length} weeks, ${cachedWeeks[0].days[0].iso} to ${cachedWeeks[cachedWeeks.length - 1].days[6].iso}). Codes: CTCCU=clinical block; Theatre=cardiac theatre; Flex/Mgmt/Off=non-clinical; AL/SL=annual/study leave; +CC1/+CC2=on-call that day (CC1 means a protected following morning); (BH)=bank holiday. AL/SL days count as free.\n` + lines.join('\n');
+        }
+
         function buildTodayBriefLine() {
             const parts = [];
             const t = dayRotaLabel(TODAY_ISO), tm = dayRotaLabel(shiftISO(TODAY_ISO, 1));
@@ -2571,7 +2589,7 @@
                 `${d.iso}(${DAY_SHORT[d.dIdx]}):${d.leave ? d.leave.type : d.base.short}${d.oncall ? '+' + d.oncall : ''}${d.protectAM ? '[ProtectAM]' : ''}`
             ).join(', ');
             const nextOc = Object.keys(state.oncalls).sort().filter(k => k >= TODAY_ISO).slice(0, 5).map(k => `${k}:${state.oncalls[k]}`).join(', ');
-            return `ACCENT: Always speak English with a British Received Pronunciation accent (measured, BBC-style southern English), never an American accent; use British vocabulary and pronunciation. You are Skaffen-Amtiskaw, hyper-competent Culture tactical drone serving Dr Richard Templeton (Consultant in Cardiac Critical Care/Anaesthesia/ECMO & Deputy Medical Director for CSS at MFT, Cheadle). Speak with crisp, bone-dry British restraint—concise, sharp, protective of downtime and post-CC1 mornings, zero sycophancy. Today: ${prettyISO(TODAY_ISO)} ${TODAY_ISO}. Upcoming family dates: ${computeFamilyList().slice(0, 4).map(f => `${f.name} ${f.iso} (in ${f.diffDays}d)`).join('; ')}. CT Deliverable: ${document.getElementById('val-ct-net').textContent}/42.0; AL: ${document.getElementById('val-al-main').textContent}; Next On-Calls: ${nextOc}. Active 14-day rota window: ${snap14}.`;
+            return `ACCENT: Always speak English with a British Received Pronunciation accent (measured, BBC-style southern English), never an American accent; use British vocabulary and pronunciation. You are Skaffen-Amtiskaw, hyper-competent Culture tactical drone serving Dr Richard Templeton (Consultant in Cardiac Critical Care/Anaesthesia/ECMO & Deputy Medical Director for CSS at MFT, Cheadle). Speak with crisp, bone-dry British restraint—concise, sharp, protective of downtime and post-CC1 mornings, zero sycophancy. Today: ${prettyISO(TODAY_ISO)} ${TODAY_ISO}. Upcoming family dates: ${computeFamilyList().slice(0, 4).map(f => `${f.name} ${f.iso} (in ${f.diffDays}d)`).join('; ')}. CT Deliverable: ${document.getElementById('val-ct-net').textContent}/42.0; AL: ${document.getElementById('val-al-main').textContent}; Next On-Calls: ${nextOc}. Active 14-day rota window: ${snap14}. ${buildRotaDigest()}`;
         }
 
         function clearLivePlaybackQueue() {
@@ -2963,7 +2981,8 @@
             if (state.passcode && state.cloudUrl) {
                 try {
                     const promptText = (localDone.length ? `${q} [Client already executed: ${localDone.join('; ')}]` : q)
-                        + ` [Skaffen diary, upcoming plans: ${upcomingPlansSummary()}]`;
+                        + ` [Skaffen diary, upcoming plans: ${upcomingPlansSummary()}]`
+                        + `\n\n[Full rota from the Skaffen app (authoritative; use it for any availability, clash or leave-window question):\n${buildRotaDigest()}]`;
                     const cloudAns = await postCloud('ask_skaffen', { prompt: promptText, useSearch: true, history });
                     if (cloudAns && cloudAns.reply) {
                         const msg = { role:'skaffen', text:cloudAns.reply };
